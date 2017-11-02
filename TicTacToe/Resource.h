@@ -13,6 +13,8 @@
 #define IDI_TICTACTOE			107
 #define IDI_SMALL				108
 #define IDC_TICTACTOE			109
+#define IDI_CROSSICO			210
+#define IDI_CIRCLEICO			211
 #define IDC_MYICON				2
 #ifndef IDC_STATIC
 #define IDC_STATIC				-1

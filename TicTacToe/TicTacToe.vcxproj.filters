@@ -51,5 +51,11 @@
     <Image Include="TicTacToe.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="circle.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="cross.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

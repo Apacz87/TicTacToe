@@ -93,6 +93,8 @@
     <ResourceCompile Include="TicTacToe.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="circle.ico" />
+    <Image Include="cross.ico" />
     <Image Include="small.ico" />
     <Image Include="TicTacToe.ico" />
   </ItemGroup>
