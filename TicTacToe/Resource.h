@@ -3,21 +3,30 @@
 // Used by TicTacToe.rc
 //
 
-#define IDS_APP_TITLE			103
+#define IDS_APP_TITLE           103
 
-#define IDR_MAINFRAME			128
-#define IDD_TICTACTOE_DIALOG	102
-#define IDD_ABOUTBOX			103
-#define IDM_ABOUT				104
-#define IDM_EXIT				105
-#define IDI_TICTACTOE			107
-#define IDI_SMALL				108
-#define IDC_TICTACTOE			109
-#define IDI_CROSSICO			210
-#define IDI_CIRCLEICO			211
-#define IDC_MYICON				2
+#define IDR_MAINFRAME           128
+#define IDD_TICTACTOE_DIALOG    102
+#define IDD_ABOUTBOX            103
+#define IDM_ABOUT               104
+#define IDM_EXIT                105
+#define IDI_TICTACTOE           107
+#define IDI_SMALL               108
+#define IDC_TICTACTOE           109
+#define IDI_CROSSICO            210
+#define IDI_CIRCLEICO           211
+#define IDB_ONE                 301
+#define IDB_TWO                 302
+#define IDB_THREE               303
+#define IDB_FOUR                304
+#define IDB_FIVE                305
+#define IDB_SIX                 306
+#define IDB_SEVEN               307
+#define IDB_EIGHT               308
+#define IDB_NINE                309
+#define IDC_MYICON              2
 #ifndef IDC_STATIC
-#define IDC_STATIC				-1
+#define IDC_STATIC              -1
 #endif
 // Next default values for new objects
 //
