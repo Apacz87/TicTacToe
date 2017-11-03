@@ -23,7 +23,7 @@ TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 HICON hCrossIcon, hCircleIcon;
 
 // Forward declarations of functions included in this code module:
-ATOM				MyRegisterClass(HINSTANCE hInstance);
+ATOM				RegisterMainWindow(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
@@ -43,7 +43,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	// Initialize global strings
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_TICTACTOE, szWindowClass, MAX_LOADSTRING);
-	MyRegisterClass(hInstance);
+	RegisterMainWindow(hInstance);
 
 	// Perform application initialization:
 	if (!InitInstance (hInstance, nCmdShow))
@@ -69,11 +69,11 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 
 
 //
-//  FUNCTION: MyRegisterClass()
+//  FUNCTION: RegisterMainWindow()
 //
 //  PURPOSE: Registers the window class.
 //
-ATOM MyRegisterClass(HINSTANCE hInstance)
+ATOM RegisterMainWindow(HINSTANCE hInstance)
 {
 	WNDCLASSEX wcex;
 
