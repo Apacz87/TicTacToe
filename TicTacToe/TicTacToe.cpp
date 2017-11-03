@@ -5,11 +5,22 @@
 #include "TicTacToe.h"
 
 #define MAX_LOADSTRING 100
+#define MAIN_WINDOW_WIDTH 220
+#define MAIN_WINDOW_HEIGH 280
+#define BUTTON_WIDTH 60
+#define BUTTON_HEIGH 60
+#define FIRST_COLUMN 10
+#define SECOND_COLUMN FIRST_COLUMN + BUTTON_WIDTH
+#define THIRD_COLUMN SECOND_COLUMN + BUTTON_WIDTH
+#define FIRST_ROW 10
+#define SECOND_ROW FIRST_ROW + BUTTON_HEIGH
+#define THIRD_ROW SECOND_ROW + BUTTON_HEIGH
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
+HICON hCrossIcon, hCircleIcon;
 
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
@@ -95,22 +106,35 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   HWND hWnd;
+	HWND hWnd, ButtonOne, ButtonTwo, ButtonThree, ButtonFour, ButtonFive, ButtonSix, ButtonSeven, ButtonEight, ButtonNine;
 
-   hInst = hInstance; // Store instance handle in our global variable
+	hInst = hInstance; // Store instance handle in our global variable
+	hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, CW_USEDEFAULT, 0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGH, NULL, NULL, hInstance, NULL);
 
-   hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
+	ButtonOne = CreateWindow(L"BUTTON", NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_ICON, FIRST_COLUMN, FIRST_ROW, BUTTON_WIDTH, BUTTON_HEIGH, hWnd, (HMENU)IDB_ONE, hInstance, NULL);
+	ButtonTwo = CreateWindow(L"BUTTON", NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_ICON, SECOND_COLUMN, FIRST_ROW, BUTTON_WIDTH, BUTTON_HEIGH, hWnd, (HMENU)IDB_TWO, hInstance, NULL);
+	ButtonThree = CreateWindow(L"BUTTON", NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_ICON, THIRD_COLUMN, FIRST_ROW, BUTTON_WIDTH, BUTTON_HEIGH, hWnd, (HMENU)IDB_THREE, hInstance, NULL);
 
-   if (!hWnd)
-   {
-      return FALSE;
-   }
+	ButtonFour = CreateWindow(L"BUTTON", NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_ICON, FIRST_COLUMN, SECOND_ROW, BUTTON_WIDTH, BUTTON_HEIGH, hWnd, (HMENU)IDB_FOUR, hInstance, NULL);
+	ButtonFive = CreateWindow(L"BUTTON", NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_ICON, SECOND_COLUMN, SECOND_ROW, BUTTON_WIDTH, BUTTON_HEIGH, hWnd, (HMENU)IDB_FIVE, hInstance, NULL);
+	ButtonSix = CreateWindow(L"BUTTON", NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_ICON, THIRD_COLUMN, SECOND_ROW, BUTTON_WIDTH, BUTTON_HEIGH, hWnd, (HMENU)IDB_SIX, hInstance, NULL);
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+	ButtonSeven = CreateWindow(L"BUTTON", NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_ICON, FIRST_COLUMN, THIRD_ROW, BUTTON_WIDTH, BUTTON_HEIGH, hWnd, (HMENU)IDB_SEVEN, hInstance, NULL);
+	ButtonEight = CreateWindow(L"BUTTON", NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_ICON, SECOND_COLUMN, THIRD_ROW, BUTTON_WIDTH, BUTTON_HEIGH, hWnd, (HMENU)IDB_EIGHT, hInstance, NULL);
+	ButtonNine = CreateWindow(L"BUTTON", NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_ICON, THIRD_COLUMN, THIRD_ROW, BUTTON_WIDTH, BUTTON_HEIGH, hWnd, (HMENU)IDB_NINE, hInstance, NULL);
 
-   return TRUE;
+	if (!hWnd)
+	{
+		return FALSE;
+	}
+
+	hCrossIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CROSSICO));
+	hCircleIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CIRCLEICO));
+
+	ShowWindow(hWnd, nCmdShow);
+	UpdateWindow(hWnd);
+
+	return TRUE;
 }
 
 //
