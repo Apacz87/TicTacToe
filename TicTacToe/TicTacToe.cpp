@@ -45,6 +45,16 @@ void EndGame()
 	}
 }
 
+// Function refreshing Node label.
+void NodeLabelRefresh(HWND hwnd)
+{
+	while (true)
+	{
+		SetWindowText(GetDlgItem(hwnd, IDC_NLABEL), std::to_wstring(ticTacGame->NumberOfExistingNodes()).c_str());
+		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+	}
+}
+
 
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPTSTR lpCmdLine, _In_ int nCmdShow)
 {
@@ -122,7 +132,7 @@ ATOM RegisterMainWindow(HINSTANCE hInstance)
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	ticTacGame = std::make_shared<TicTacGame::Game>(true);
-	HWND hWnd, ButtonOne, ButtonTwo, ButtonThree, ButtonFour, ButtonFive, ButtonSix, ButtonSeven, ButtonEight, ButtonNine;
+	HWND hWnd, ButtonOne, ButtonTwo, ButtonThree, ButtonFour, ButtonFive, ButtonSix, ButtonSeven, ButtonEight, ButtonNine, PlayerLabel, CurentPlayerLabel, NodesLabel, NumberOfNodesLabel;
 
 	hInst = hInstance; // Store instance handle in our global variable
 	hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, CW_USEDEFAULT, 0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGH, NULL, NULL, hInstance, NULL);
@@ -139,16 +149,29 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	ButtonEight = CreateWindow(L"BUTTON", NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_ICON, SECOND_COLUMN, THIRD_ROW, BUTTON_WIDTH, BUTTON_HEIGH, hWnd, (HMENU)IDB_EIGHT, hInstance, NULL);
 	ButtonNine = CreateWindow(L"BUTTON", NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_ICON, THIRD_COLUMN, THIRD_ROW, BUTTON_WIDTH, BUTTON_HEIGH, hWnd, (HMENU)IDB_NINE, hInstance, NULL);
 
+	PlayerLabel = CreateWindow(L"STATIC", NULL, WS_CHILD | WS_VISIBLE | SS_LEFT, 5, MAIN_WINDOW_HEIGH - 85, 46, 18, hWnd, NULL, hInstance, NULL);
+	CurentPlayerLabel = CreateWindow(L"STATIC", NULL, WS_CHILD | WS_VISIBLE | SS_LEFT, 54, MAIN_WINDOW_HEIGH - 85, 10, 18, hWnd, (HMENU)IDC_PLABEL, hInstance, NULL);
+
+	NodesLabel = CreateWindow(L"STATIC", NULL, WS_CHILD | WS_VISIBLE | SS_LEFT, 103, MAIN_WINDOW_HEIGH - 85, 47, 18, hWnd, NULL, hInstance, NULL);
+	NumberOfNodesLabel = CreateWindow(L"STATIC", NULL, WS_CHILD | WS_VISIBLE | SS_LEFT, 151, MAIN_WINDOW_HEIGH - 85, 47, 18, hWnd, (HMENU)IDC_NLABEL, hInstance, NULL);
+
 	if (!hWnd)
 	{
 		return FALSE;
 	}
 
+	SetWindowText(PlayerLabel, L"Player:");
+	auto playerSymbol = ticTacGame->CurrentPlayer();
+	SetWindowText(CurentPlayerLabel, (LPCWSTR)&playerSymbol);
+	SetWindowText(NodesLabel, L"Nodes:");
+	SetWindowText(NumberOfNodesLabel, std::to_wstring(ticTacGame->NumberOfExistingNodes()).c_str());
 	hCrossIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CROSSICO));
 	hCircleIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CIRCLEICO));
 
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
+	std::thread labelRefreshingThread(NodeLabelRefresh, hWnd);
+	labelRefreshingThread.detach();
 
 	return TRUE;
 }
@@ -212,6 +235,9 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 				ticTacGame->SwitchPlayer();
 			}
 
+			auto cp = ticTacGame->CurrentPlayer();
+			SetWindowText(GetDlgItem(hWnd, IDC_PLABEL), (LPCWSTR)&cp);
+			SetWindowText(GetDlgItem(hWnd, IDC_NLABEL), std::to_wstring(ticTacGame->NumberOfExistingNodes()).c_str());
 			break;
 		}
 

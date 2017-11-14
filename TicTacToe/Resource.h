@@ -24,6 +24,8 @@
 #define IDB_SEVEN               307
 #define IDB_EIGHT               308
 #define IDB_NINE                309
+#define IDC_NLABEL              310
+#define IDC_PLABEL              311
 #define IDC_MYICON              2
 #ifndef IDC_STATIC
 #define IDC_STATIC              -1
