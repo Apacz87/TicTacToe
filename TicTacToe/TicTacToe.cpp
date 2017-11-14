@@ -21,6 +21,7 @@ HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 HICON hCrossIcon, hCircleIcon;
+std::shared_ptr<TicTacGame::Game> ticTacGame;
 
 // Forward declarations of functions included in this code module:
 ATOM				RegisterMainWindow(HINSTANCE hInstance);
@@ -28,10 +29,24 @@ BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	MainWindowProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 
-int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPTSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+void EndGame()
+{
+	if (ticTacGame->CheckIfSpecifiedPlayerWon(TicTacGame::Player::CROSS))
+	{
+		MessageBox(NULL, L"Player X won!", L"Win!", MB_ICONINFORMATION);
+	}
+	else if (ticTacGame->CheckIfSpecifiedPlayerWon(TicTacGame::Player::CIRCLE))
+	{
+		MessageBox(NULL, L"Player O won!", L"Win!", MB_ICONINFORMATION);
+	}
+	else
+	{
+		MessageBox(NULL, L"Nobody won!", L"Draw!", MB_ICONINFORMATION);
+	}
+}
+
+
+int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPTSTR lpCmdLine, _In_ int nCmdShow)
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
@@ -106,6 +121,7 @@ ATOM RegisterMainWindow(HINSTANCE hInstance)
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
+	ticTacGame = std::make_shared<TicTacGame::Game>(true);
 	HWND hWnd, ButtonOne, ButtonTwo, ButtonThree, ButtonFour, ButtonFive, ButtonSix, ButtonSeven, ButtonEight, ButtonNine;
 
 	hInst = hInstance; // Store instance handle in our global variable
@@ -156,8 +172,49 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 	switch (message)
 	{
 	case WM_COMMAND:
-		wmId    = LOWORD(wParam);
+		wmId = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);
+		if (wmId == IDB_ONE || wmId == IDB_TWO || wmId == IDB_THREE || wmId == IDB_FOUR || wmId == IDB_FIVE || wmId == IDB_SIX || wmId == IDB_SEVEN || wmId == IDB_EIGHT || wmId == IDB_NINE)
+		{
+			if (!ticTacGame->MakeMove((wmId % 10) - 1))
+			{
+				MessageBox(NULL, L"You're cheating!", L"Error!", MB_ICONEXCLAMATION);
+				break;
+			}
+
+			SendMessage(GetDlgItem(hWnd, wmId), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)(ticTacGame->CurrentPlayer() == TicTacGame::Player::CROSS ? hCrossIcon : hCircleIcon));
+			if (ticTacGame->IsGameOver())
+			{
+				EndGame();
+				DestroyWindow(hWnd);
+				break;
+			}
+
+			if (ticTacGame->AiIsPlaying())
+			{
+				ticTacGame->UpdateRootNode((wmId % 10) - 1);
+				auto x = ticTacGame->BestAvailableMove();
+				ticTacGame->MakeMove(x);
+				SendMessage(GetDlgItem(hWnd, x + 301), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)(ticTacGame->CurrentPlayer() == TicTacGame::Player::CROSS ? hCrossIcon : hCircleIcon));
+				if (ticTacGame->IsGameOver())
+				{
+					EndGame();
+					DestroyWindow(hWnd);
+					break;
+				}
+
+				ticTacGame->UpdateRootNode(x);
+				ticTacGame->CleanUpTree();
+			}
+
+			if (!ticTacGame->AiIsPlaying())
+			{
+				ticTacGame->SwitchPlayer();
+			}
+
+			break;
+		}
+
 		// Parse the menu selections:
 		switch (wmId)
 		{
