@@ -28,6 +28,7 @@ ATOM				RegisterMainWindow(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	MainWindowProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+BOOL    CALLBACK    NewGameDlgProc(HWND, UINT, WPARAM, LPARAM);
 
 void EndGame()
 {
@@ -244,14 +245,23 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		// Parse the menu selections:
 		switch (wmId)
 		{
-		case IDM_ABOUT:
-			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-			break;
-		case IDM_EXIT:
-			DestroyWindow(hWnd);
-			break;
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
+			case IDM_NEWGAME:
+				{
+					int ret = DialogBox(hInst, MAKEINTRESOURCE(IDD_NEWGAME_DIALOG), hWnd, NewGameDlgProc);
+					if (ret == IDOK)
+						MessageBox(hWnd, L"You selected \'OK\'!", L"Test", MB_ICONINFORMATION);
+					else if (ret == IDCANCEL)
+						MessageBox(hWnd, L"You selected \'Cancel\'!", L"Test", MB_ICONINFORMATION);
+				}
+				break;
+			case IDM_ABOUT:
+				DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+				break;
+			case IDM_EXIT:
+				DestroyWindow(hWnd);
+				break;
+			default:
+				return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 		break;
 	case WM_PAINT:
@@ -286,4 +296,29 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	return (INT_PTR)FALSE;
+}
+
+// Message handler for new game box.
+BOOL CALLBACK NewGameDlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (Msg)
+	{
+		case WM_INITDIALOG:
+			{ }
+			break;
+		case WM_COMMAND:
+			switch (LOWORD(wParam))
+			{
+				case IDOK:
+					EndDialog(hwnd, IDOK);
+					break;
+				case IDCANCEL:
+					EndDialog(hwnd, IDCANCEL);
+					break;
+			}
+			break;
+		default:
+			return FALSE;
+	}
+	return TRUE;
 }
