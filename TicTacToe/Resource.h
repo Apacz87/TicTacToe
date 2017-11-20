@@ -15,6 +15,7 @@
 #define IDI_TICTACTOE           151
 #define IDI_SMALL               152
 #define IDC_TICTACTOE           200
+#define IDC_PLAY_WITH_AI        201
 #define IDI_CROSSICO            210
 #define IDI_CIRCLEICO           211
 #define IDB_ONE                 301
