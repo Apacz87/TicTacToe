@@ -17,6 +17,8 @@
 #define THIRD_ROW SECOND_ROW + BUTTON_HEIGH
 
 // Global Variables:
+bool RefreshingLabelThreadWasCreated;
+std::thread LabelRefreshingThread;
 HINSTANCE hInst;								// current instance
 HWND MainWindowHandle;
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
@@ -79,6 +81,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	HACCEL hAccelTable;
 
 	// Initialize global strings
+	RefreshingLabelThreadWasCreated = false;
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_TICTACTOE, szWindowClass, MAX_LOADSTRING);
 	RegisterMainWindow(hInstance);
@@ -185,9 +188,23 @@ HWND InitializationOfMainWindow(HINSTANCE hInstance)
 
 	ShowWindow(hWnd, SW_SHOW);
 	UpdateWindow(hWnd);
-	std::thread labelRefreshingThread(NodeLabelRefresh, hWnd);
-	labelRefreshingThread.detach();
-
+	
+	if (!RefreshingLabelThreadWasCreated)
+	{
+		LabelRefreshingThread = std::thread(NodeLabelRefresh, hWnd);
+		LabelRefreshingThread.detach();
+		RefreshingLabelThreadWasCreated = true;
+	}
+	else
+	{
+		LabelRefreshingThread.~thread();
+		LabelRefreshingThread = std::thread(NodeLabelRefresh, hWnd);
+		LabelRefreshingThread.detach();
+		RefreshingLabelThreadWasCreated = true;
+	}
+	
+	//std::thread labelRefreshingThread(NodeLabelRefresh, hWnd);
+	//labelRefreshingThread.detach();
 	return hWnd;
 }
 
