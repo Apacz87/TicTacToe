@@ -17,9 +17,9 @@
 #define THIRD_ROW SECOND_ROW + BUTTON_HEIGH
 
 // Global Variables:
-bool RefreshingLabelThreadWasCreated;
-std::thread LabelRefreshingThread;
-HINSTANCE hInst;								// current instance
+bool RefreshingLabelThreadWasCreated;           // The value that determines whether the thread has already been created.
+std::thread LabelRefreshingThread;              // The global thread for refreshing label in main window.
+HINSTANCE hInst;								// Current instance
 HWND MainWindowHandle;
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
@@ -33,7 +33,7 @@ typedef struct
 	bool AI;
 } GameSettings;
 
-static GameSettings gameSettings;
+static GameSettings CurrentGameSettings;
 
 // Forward declarations of functions included in this code module:
 ATOM				RegisterMainWindow(HINSTANCE hInstance);
@@ -70,7 +70,7 @@ void NodeLabelRefresh(HWND hwnd)
 	}
 }
 
-
+// The WinApi main function.
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPTSTR lpCmdLine, _In_ int nCmdShow)
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
@@ -150,7 +150,7 @@ ATOM RegisterMainWindow(HINSTANCE hInstance)
 //
 HWND InitializationOfMainWindow(HINSTANCE hInstance)
 {
-	ticTacGame = std::make_shared<TicTacGame::Game>(gameSettings.AI);
+	ticTacGame = std::make_shared<TicTacGame::Game>(CurrentGameSettings.AI);
 	HWND hWnd, ButtonOne, ButtonTwo, ButtonThree, ButtonFour, ButtonFive, ButtonSix, ButtonSeven, ButtonEight, ButtonNine, PlayerLabel, CurentPlayerLabel, NodesLabel, NumberOfNodesLabel;
 
 	hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, CW_USEDEFAULT, 0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGH, NULL, NULL, hInstance, NULL);
@@ -188,7 +188,7 @@ HWND InitializationOfMainWindow(HINSTANCE hInstance)
 
 	ShowWindow(hWnd, SW_SHOW);
 	UpdateWindow(hWnd);
-	
+
 	if (!RefreshingLabelThreadWasCreated)
 	{
 		LabelRefreshingThread = std::thread(NodeLabelRefresh, hWnd);
@@ -197,14 +197,12 @@ HWND InitializationOfMainWindow(HINSTANCE hInstance)
 	}
 	else
 	{
-		LabelRefreshingThread.~thread();
+		LabelRefreshingThread.~thread();                             // Destruction of the old thread
 		LabelRefreshingThread = std::thread(NodeLabelRefresh, hWnd);
 		LabelRefreshingThread.detach();
 		RefreshingLabelThreadWasCreated = true;
 	}
-	
-	//std::thread labelRefreshingThread(NodeLabelRefresh, hWnd);
-	//labelRefreshingThread.detach();
+
 	return hWnd;
 }
 
@@ -351,7 +349,7 @@ BOOL CALLBACK NewGameDlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 				case IDOK:
 					{
 						HWND hPlayWithAi = GetDlgItem(hwnd, IDC_PLAY_WITH_AI);
-						gameSettings.AI = (IsDlgButtonChecked(hwnd, IDC_PLAY_WITH_AI) == BST_CHECKED);
+						CurrentGameSettings.AI = (IsDlgButtonChecked(hwnd, IDC_PLAY_WITH_AI) == BST_CHECKED);
 					}
 					EndDialog(hwnd, IDOK);
 					break;
