@@ -17,18 +17,33 @@
 #define THIRD_ROW SECOND_ROW + BUTTON_HEIGH
 
 // Global Variables:
-HINSTANCE hInst;								// current instance
+bool RefreshingLabelThreadWasCreated;           // The value that determines whether the thread has already been created.
+std::thread LabelRefreshingThread;              // The global thread for refreshing label in main window.
+HINSTANCE hInst;								// Current instance
+HWND MainWindowHandle;
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 HICON hCrossIcon, hCircleIcon;
 std::shared_ptr<TicTacGame::Game> ticTacGame;
 
+
+// The Game settings
+typedef struct
+{
+	bool AI;
+} GameSettings;
+
+static GameSettings CurrentGameSettings;
+
 // Forward declarations of functions included in this code module:
 ATOM				RegisterMainWindow(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
+HWND                InitializationOfMainWindow(HINSTANCE);
 LRESULT CALLBACK	MainWindowProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+BOOL    CALLBACK    NewGameDlgProc(HWND, UINT, WPARAM, LPARAM);
 
+// Game Over message.
 void EndGame()
 {
 	if (ticTacGame->CheckIfSpecifiedPlayerWon(TicTacGame::Player::CROSS))
@@ -55,7 +70,7 @@ void NodeLabelRefresh(HWND hwnd)
 	}
 }
 
-
+// The WinApi main function.
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPTSTR lpCmdLine, _In_ int nCmdShow)
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
@@ -66,15 +81,24 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	HACCEL hAccelTable;
 
 	// Initialize global strings
+	RefreshingLabelThreadWasCreated = false;
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_TICTACTOE, szWindowClass, MAX_LOADSTRING);
 	RegisterMainWindow(hInstance);
+	hInst = hInstance; // Store instance handle in our global variable
 
 	// Perform application initialization:
-	if (!InitInstance (hInstance, nCmdShow))
+	int ret = DialogBox(hInst, MAKEINTRESOURCE(IDD_NEWGAME_DIALOG), NULL, NewGameDlgProc);
+	if (ret == IDOK)
 	{
-		return FALSE;
+		MainWindowHandle = InitializationOfMainWindow(hInst);
+		if (!MainWindowHandle)
+		{
+			return FALSE;
+		}
 	}
+	else if (ret == IDCANCEL)
+		return FALSE;
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_TICTACTOE));
 
@@ -120,21 +144,15 @@ ATOM RegisterMainWindow(HINSTANCE hInstance)
 }
 
 //
-//   FUNCTION: InitInstance(HINSTANCE, int)
+//   FUNCTION: InitializationOfMainWindow(HINSTANCE)
 //
-//   PURPOSE: Saves instance handle and creates main window
+//   PURPOSE: Creates main window
 //
-//   COMMENTS:
-//
-//        In this function, we save the instance handle in a global variable and
-//        create and display the main program window.
-//
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
+HWND InitializationOfMainWindow(HINSTANCE hInstance)
 {
-	ticTacGame = std::make_shared<TicTacGame::Game>(true);
+	ticTacGame = std::make_shared<TicTacGame::Game>(CurrentGameSettings.AI);
 	HWND hWnd, ButtonOne, ButtonTwo, ButtonThree, ButtonFour, ButtonFive, ButtonSix, ButtonSeven, ButtonEight, ButtonNine, PlayerLabel, CurentPlayerLabel, NodesLabel, NumberOfNodesLabel;
 
-	hInst = hInstance; // Store instance handle in our global variable
 	hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, CW_USEDEFAULT, 0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGH, NULL, NULL, hInstance, NULL);
 
 	ButtonOne = CreateWindow(L"BUTTON", NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_ICON, FIRST_COLUMN, FIRST_ROW, BUTTON_WIDTH, BUTTON_HEIGH, hWnd, (HMENU)IDB_ONE, hInstance, NULL);
@@ -157,7 +175,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	if (!hWnd)
 	{
-		return FALSE;
+		return NULL;
 	}
 
 	SetWindowText(PlayerLabel, L"Player:");
@@ -168,12 +186,24 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	hCrossIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CROSSICO));
 	hCircleIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CIRCLEICO));
 
-	ShowWindow(hWnd, nCmdShow);
+	ShowWindow(hWnd, SW_SHOW);
 	UpdateWindow(hWnd);
-	std::thread labelRefreshingThread(NodeLabelRefresh, hWnd);
-	labelRefreshingThread.detach();
 
-	return TRUE;
+	if (!RefreshingLabelThreadWasCreated)
+	{
+		LabelRefreshingThread = std::thread(NodeLabelRefresh, hWnd);
+		LabelRefreshingThread.detach();
+		RefreshingLabelThreadWasCreated = true;
+	}
+	else
+	{
+		LabelRefreshingThread.~thread();                             // Destruction of the old thread
+		LabelRefreshingThread = std::thread(NodeLabelRefresh, hWnd);
+		LabelRefreshingThread.detach();
+		RefreshingLabelThreadWasCreated = true;
+	}
+
+	return hWnd;
 }
 
 //
@@ -244,14 +274,31 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		// Parse the menu selections:
 		switch (wmId)
 		{
-		case IDM_ABOUT:
-			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-			break;
-		case IDM_EXIT:
-			DestroyWindow(hWnd);
-			break;
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
+			case IDM_NEWGAME:
+				{
+					int ret = DialogBox(hInst, MAKEINTRESOURCE(IDD_NEWGAME_DIALOG), hWnd, NewGameDlgProc);
+					if (ret == IDOK)
+					{
+						auto oldWindow = MainWindowHandle;
+						ticTacGame->rootNode = NULL;
+						ticTacGame->CleanUpTree();
+						MainWindowHandle = InitializationOfMainWindow(hInst);
+						// Temporary solution - destruction of the old window closes the application.
+						ShowWindow(oldWindow, SW_HIDE);
+						//DestroyWindow(oldWindow);
+					}
+					else if (ret == IDCANCEL)
+						break;
+				}
+				break;
+			case IDM_ABOUT:
+				DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+				break;
+			case IDM_EXIT:
+				DestroyWindow(hWnd);
+				break;
+			default:
+				return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 		break;
 	case WM_PAINT:
@@ -286,4 +333,33 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	return (INT_PTR)FALSE;
+}
+
+// Message handler for new game box.
+BOOL CALLBACK NewGameDlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (Msg)
+	{
+		case WM_INITDIALOG:
+			{ }
+			break;
+		case WM_COMMAND:
+			switch (LOWORD(wParam))
+			{
+				case IDOK:
+					{
+						HWND hPlayWithAi = GetDlgItem(hwnd, IDC_PLAY_WITH_AI);
+						CurrentGameSettings.AI = (IsDlgButtonChecked(hwnd, IDC_PLAY_WITH_AI) == BST_CHECKED);
+					}
+					EndDialog(hwnd, IDOK);
+					break;
+				case IDCANCEL:
+					EndDialog(hwnd, IDCANCEL);
+					break;
+			}
+			break;
+		default:
+			return FALSE;
+	}
+	return TRUE;
 }
