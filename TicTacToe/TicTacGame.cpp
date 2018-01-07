@@ -236,7 +236,7 @@ namespace TicTacGame
 	}
 
 	// Returns True if specified player won.
-	bool Game::CheckIfSpecifiedPlayerWon(Player ply)
+	bool Game::CheckIfSpecifiedPlayerWon(const Player& ply) const
 	{
 		return this->board.CheckIfPlayerWon(ply);
 	}
@@ -275,7 +275,7 @@ namespace TicTacGame
 	}
 
 	// Update the root node in tree.
-	void Game::UpdateRootNode(short move)
+	void Game::UpdateRootNode(const short& move)
 	{
 		if (this->rootNode == nullptr)
 		{

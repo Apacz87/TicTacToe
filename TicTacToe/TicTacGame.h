@@ -169,19 +169,19 @@ namespace TicTacGame
 		bool AiIsPlaying() const;
 
 		// Returns True if specified player won.
-		bool CheckIfSpecifiedPlayerWon(Player);
+		bool CheckIfSpecifiedPlayerWon(const Player&) const;
 
 		// Returns current Player.
 		Player CurrentPlayer() const;
 
-		// The gae tree root node.
+		// The game tree root node.
 		std::shared_ptr<GameNode> rootNode;
 
 		// Returns number of existing nodes in game tree.
 		int NumberOfExistingNodes() const;
 
 		// Update the root node in tree.
-		void UpdateRootNode(short);
+		void UpdateRootNode(const short&);
 
 		// Delete unreachable game tree nodes.
 		void CleanUpTree();
