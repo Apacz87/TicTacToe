@@ -86,13 +86,13 @@ namespace TicTacGame
 		Player currentPlayer;
 
 		// Add node to derived nodes list of a current node.
-		void AddChildNode(GameBoard, int);
+		void AddChildNode(GameBoard, const int&);
 
 		// Recursive generating child nodes in game tree.
 		void RecursiveTreeWalk(std::shared_ptr<GameNode>);
 
 		// Returns distance from root for current node.
-		int DistanceFromRoot();
+		int DistanceFromRoot() const;
 
 
 	public:
@@ -112,16 +112,16 @@ namespace TicTacGame
 		void GenerateChildNodes();
 
 		// Returns True if the node is a leaf.
-		bool Leaf();
+		bool Leaf() const;
 
 		// Return number of existing nodes.
-		int TotalNumberOfNodes();
+		int TotalNumberOfNodes() const;
 
 		// Return value of game tree node.
-		int NodeVale();
+		int NodeVale() const;
 
 		// Return value of base move for current node.
-		short BaseMove();
+		short BaseMove() const;
 
 	};
 

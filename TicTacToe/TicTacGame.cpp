@@ -112,7 +112,7 @@ namespace TicTacGame
 	}
 
 	// Add node to derived nodes list of a current node.
-	void GameNode::AddChildNode(GameBoard board, int field)
+	void GameNode::AddChildNode(GameBoard board, const int& field)
 	{
 		board.SetField(field, this->currentPlayer);
 		auto nextPlayer = this->currentPlayer == Player::CROSS ? Player::CIRCLE : Player::CROSS;
@@ -143,13 +143,13 @@ namespace TicTacGame
 	}
 
 	// Return number of existing nodes.
-	int GameNode::TotalNumberOfNodes()
+	int GameNode::TotalNumberOfNodes() const
 	{
 		return this->numberOfNodes;
 	}
 
 	// Returns True if the node is a leaf.
-	bool GameNode::Leaf()
+	bool GameNode::Leaf() const
 	{
 		return this->gameState.Win();
 	}
@@ -172,7 +172,7 @@ namespace TicTacGame
 	}
 
 	// Return value of game tree node.
-	int GameNode::NodeVale()
+	int GameNode::NodeVale() const
 	{
 		if (this->Leaf())
 		{
@@ -195,22 +195,24 @@ namespace TicTacGame
 		{
 			std::for_each(this->derivedNodes.begin(), this->derivedNodes.end(), [&](std::shared_ptr<GameNode> n) {sum_of_nodes_value += n->NodeVale(); });
 		}
+
 		return sum_of_nodes_value;
 	}
 
 	// Returns value of base move.
-	short GameNode::BaseMove()
+	short GameNode::BaseMove() const
 	{
 		return this->lastMove;
 	}
 
 	// Returns distance from root node.
-	int GameNode::DistanceFromRoot()
+	int GameNode::DistanceFromRoot() const
 	{
 		if (!this->parentNode.expired())
 		{
 			return 1 + this->parentNode.lock()->DistanceFromRoot();
 		}
+
 		return 0;
 	}
 
