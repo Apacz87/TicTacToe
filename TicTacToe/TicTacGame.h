@@ -178,7 +178,7 @@ namespace TicTacGame
 		std::shared_ptr<GameNode> rootNode;
 
 		// Returns number of existing nodes in game tree.
-		int NumberOfExistingNodes();
+		int NumberOfExistingNodes() const;
 
 		// Update the root node in tree.
 		void UpdateRootNode(short);

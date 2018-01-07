@@ -240,7 +240,7 @@ namespace TicTacGame
 	}
 
 	// Returns number of existing nodes in game tree.
-	int Game::NumberOfExistingNodes()
+	int Game::NumberOfExistingNodes() const
 	{
 		return gameTree->TotalNumberOfNodes();
 	}
