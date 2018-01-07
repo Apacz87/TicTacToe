@@ -305,7 +305,7 @@ namespace TicTacGame
 	}
 
 	// Returns the number of the best available move for the indicated player.
-	int Game::BestAvailableMove(Player player)
+	int Game::BestAvailableMove(const Player& player) const
 	{
 		if (player == Player::CROSS)
 		{
