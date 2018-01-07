@@ -35,22 +35,22 @@ namespace TicTacGame
 		std::array<Player, 9> fields;
 
 		// Return number of occupied fields in board game.
-		int NumberOfOccupiedFields();
+		int NumberOfOccupiedFields() const;
 
 		// Checking if game is over, someone won.
-		int Win();
+		int Win() const;
 
 		// Sets the value on the indicated field.
-		void SetField(int, char);
+		void SetField(const int&, const char&);
 
 		// Return true if the indicated field is free.
-		bool IsFieldFree(int);
+		bool IsFieldFree(const int&) const;
 
 		// Return true if the indicated player won.
-		bool CheckIfPlayerWon(Player);
+		bool CheckIfPlayerWon(const Player&) const;
 
 		// Return true if game board is full.
-		bool IsBoardFull();
+		bool IsBoardFull() const;
 
 	public:
 		// The GameBoard class constructor.
@@ -163,16 +163,16 @@ namespace TicTacGame
 		bool MakeMove(int);
 
 		// Returns True if game is over.
-		bool IsGameOver();
+		bool IsGameOver() const;
 
 		// Returns True if AI is Playing.
-		bool AiIsPlaying();
+		bool AiIsPlaying() const;
 
 		// Returns True if specified player won.
 		bool CheckIfSpecifiedPlayerWon(Player);
 
 		// Returns current Player.
-		Player CurrentPlayer();
+		Player CurrentPlayer() const;
 
 		// The gae tree root node.
 		std::shared_ptr<GameNode> rootNode;

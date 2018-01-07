@@ -14,7 +14,7 @@ namespace TicTacGame
 	}
 
 	// Checking if game is over, someone won.
-	int GameBoard::Win()
+	int GameBoard::Win() const
 	{
 		bool a, b, c, d, e, f, g, h;
 
@@ -48,14 +48,14 @@ namespace TicTacGame
 	}
 
 	// Check that the indicated field is free.
-	bool GameBoard::IsFieldFree(int nr)
+	bool GameBoard::IsFieldFree(const int& nr) const
 	{
 		if (nr<0 || nr>8) return false;
 		return fields[nr] == Player::NONE;
 	}
 
 	// Sets the value on the indicated field.
-	void GameBoard::SetField(int nr, char player)
+	void GameBoard::SetField(const int& nr, const char& player)
 	{
 		if (nr<0 || nr>8) std::out_of_range("Field value is out of reange!");
 		if (player == 'X') fields[nr] = Player::CROSS;
@@ -63,7 +63,7 @@ namespace TicTacGame
 	}
 
 	// Check whether the indicated player won.
-	bool GameBoard::CheckIfPlayerWon(Player player)
+	bool GameBoard::CheckIfPlayerWon(const Player& player) const
 	{
 		auto fieldNumber = this->Win();
 		if (fieldNumber < 1)
@@ -75,13 +75,13 @@ namespace TicTacGame
 	}
 
 	// Check if game board is full.
-	bool GameBoard::IsBoardFull()
+	bool GameBoard::IsBoardFull() const
 	{
 		return this->fields.end() == std::find(this->fields.begin(), this->fields.end(), Player::NONE);
 	}
 
 	// Return number of occupied fields in board game.
-	int GameBoard::NumberOfOccupiedFields()
+	int GameBoard::NumberOfOccupiedFields() const
 	{
 		return std::count_if(this->fields.begin(), this->fields.end(), [](Player ply){ return ply != Player::NONE; });
 	}
@@ -228,7 +228,7 @@ namespace TicTacGame
 	}
 
 	// Returns True if AI is Playing.
-	bool Game::AiIsPlaying()
+	bool Game::AiIsPlaying() const
 	{
 		return this->playWithAI;
 	}
@@ -249,7 +249,7 @@ namespace TicTacGame
 	void Game::SwitchPlayer(){ this->player = player == Player::CROSS ? Player::CIRCLE : Player::CROSS; }
 
 	// Returns current Player.
-	Player Game::CurrentPlayer()
+	Player Game::CurrentPlayer() const
 	{
 		return this->player;
 	}
@@ -337,7 +337,7 @@ namespace TicTacGame
 	}
 
 	// Returns True if game is over.
-	bool Game::IsGameOver()
+	bool Game::IsGameOver() const
 	{
 		if (this->board.Win() || this->board.IsBoardFull()) return true;
 		return false;
