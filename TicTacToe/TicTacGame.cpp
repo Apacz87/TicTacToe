@@ -83,23 +83,19 @@ namespace TicTacGame
 	// Return number of occupied fields in board game.
 	int GameBoard::NumberOfOccupiedFields() const
 	{
-		return std::count_if(this->fields.begin(), this->fields.end(), [](Player ply){ return ply != Player::NONE; });
+		return std::count_if(this->fields.begin(), this->fields.end(), [&](Player ply){ return ply != Player::NONE; });
 	}
 
 	// The GameNode class constructor.
-	GameNode::GameNode(Player ply = Player::CROSS) : gameState(), lastMove(-1)
+	GameNode::GameNode(Player ply = Player::CROSS) : gameState(), lastMove(-1), currentPlayer(ply)
 	{
-		this->currentPlayer = ply;
 		this->numberOfNodes++;
 	}
 
 	// The GameNode class constructor.
-	GameNode::GameNode(std::shared_ptr<GameNode> base, Player ply, GameBoard board, short move)
+	GameNode::GameNode(std::shared_ptr<GameNode> base, Player ply, GameBoard board, short move) :
+		gameState(board), lastMove(move), parentNode(base), currentPlayer(ply)
 	{
-		this->lastMove = move;
-		this->parentNode = base;
-		this->gameState = board;
-		this->currentPlayer = ply;
 		this->numberOfNodes++;
 	}
 
@@ -217,12 +213,10 @@ namespace TicTacGame
 	}
 
 	// The Game class constructor.
-	Game::Game(bool ai = false) : availableMovements()
+	Game::Game(bool ai = false) : availableMovements(), playWithAI(ai), player(Player::CROSS)
 	{
-		this->playWithAI = ai;
-		this->player = Player::CROSS;
-		this->gameTree = nullptr;
-		this->rootNode = gameTree;
+		//this->gameTree = nullptr;
+		//this->rootNode = gameTree;
 		if (this->playWithAI)
 		{
 			this->threadGeneratingGameTree = std::async(&Game::generateTree, this);
