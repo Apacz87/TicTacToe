@@ -13,49 +13,49 @@ namespace TicTacGame
 		fields.fill(Player::NONE);
 	}
 
-	// Checking if game is over, someone won.
-	int GameBoard::Win()
+	// Checking if game is over, returns the winner.
+	Player GameBoard::Winner() const
 	{
+		// Auxiliary variables
 		bool a, b, c, d, e, f, g, h;
 
-		// sukces w linii?
+		// Checking for success in the line:
+		a = ((this->fields[0] == this->fields[1]) && (this->fields[1] == this->fields[2]) && (this->fields[0] != Player::NONE));
+		b = ((this->fields[3] == this->fields[4]) && (this->fields[4] == this->fields[5]) && (this->fields[3] != Player::NONE));
+		c = ((this->fields[6] == this->fields[7]) && (this->fields[7] == this->fields[8]) && (this->fields[6] != Player::NONE));
 
-		a = ((fields[0] == fields[1]) && (fields[1] == fields[2]) && (fields[0] != Player::NONE));
-		b = ((fields[3] == fields[4]) && (fields[4] == fields[5]) && (fields[3] != Player::NONE));
-		c = ((fields[6] == fields[7]) && (fields[7] == fields[8]) && (fields[6] != Player::NONE));
-		// sukces w kolumnie?
+		// Checking success in the column:
+		d = ((this->fields[0] == this->fields[3]) && (this->fields[3] == this->fields[6]) && (this->fields[0] != Player::NONE));
+		e = ((this->fields[1] == this->fields[4]) && (this->fields[4] == this->fields[7]) && (this->fields[1] != Player::NONE));
+		f = ((this->fields[2] == this->fields[5]) && (this->fields[5] == this->fields[8]) && (this->fields[2] != Player::NONE));
 
-		d = ((fields[0] == fields[3]) && (fields[3] == fields[6]) && (fields[0] != Player::NONE));
-		e = ((fields[1] == fields[4]) && (fields[4] == fields[7]) && (fields[1] != Player::NONE));
-		f = ((fields[2] == fields[5]) && (fields[5] == fields[8]) && (fields[2] != Player::NONE));
-
-		// sukces na przekatnej
-
-		g = ((fields[0] == fields[4]) && (fields[4] == fields[8]) && (fields[0] != Player::NONE));
-		h = ((fields[2] == fields[4]) && (fields[4] == fields[6]) && (fields[2] != Player::NONE));
+		// Checking success diagonally:
+		g = ((this->fields[0] == this->fields[4]) && (this->fields[4] == this->fields[8]) && (this->fields[0] != Player::NONE));
+		h = ((this->fields[2] == this->fields[4]) && (this->fields[4] == this->fields[6]) && (this->fields[2] != Player::NONE));
 
 		if (!(a || b || c || d || e || f || g || h))
-			return 0;
+			return Player::NONE; // No winner
 
-		if (a) return 1;    // robimy to aby wiedziec kto wygral
-		if (b) return 3;
-		if (c) return 6;
-		if (d) return 3;
-		if (e) return 4;
-		if (f) return 5;
-		if (g) return 4;
-		if (h) return 4;
+		// Checking who won:
+		if (a) return this->fields[1];
+		if (b) return this->fields[3];
+		if (c) return this->fields[6];
+		if (d) return this->fields[3];
+		if (e) return this->fields[4];
+		if (f) return this->fields[5];
+		if (g) return this->fields[4];
+		if (h) return this->fields[4];
 	}
 
 	// Check that the indicated field is free.
-	bool GameBoard::IsFieldFree(int nr)
+	bool GameBoard::IsFieldFree(const int& nr) const
 	{
 		if (nr<0 || nr>8) return false;
 		return fields[nr] == Player::NONE;
 	}
 
 	// Sets the value on the indicated field.
-	void GameBoard::SetField(int nr, char player)
+	void GameBoard::SetField(const int& nr, const char& player)
 	{
 		if (nr<0 || nr>8) std::out_of_range("Field value is out of reange!");
 		if (player == 'X') fields[nr] = Player::CROSS;
@@ -63,43 +63,33 @@ namespace TicTacGame
 	}
 
 	// Check whether the indicated player won.
-	bool GameBoard::CheckIfPlayerWon(Player player)
+	bool GameBoard::CheckIfPlayerWon(const Player& player) const
 	{
-		auto fieldNumber = this->Win();
-		if (fieldNumber < 1)
-		{
-			return false;
-		}
-
-		return this->fields[fieldNumber] == player;
+		return this->Winner() == player;
 	}
 
 	// Check if game board is full.
-	bool GameBoard::IsBoardFull()
+	bool GameBoard::IsBoardFull() const
 	{
 		return this->fields.end() == std::find(this->fields.begin(), this->fields.end(), Player::NONE);
 	}
 
 	// Return number of occupied fields in board game.
-	int GameBoard::NumberOfOccupiedFields()
+	int GameBoard::NumberOfOccupiedFields() const
 	{
-		return std::count_if(this->fields.begin(), this->fields.end(), [](Player ply){ return ply != Player::NONE; });
+		return std::count_if(this->fields.begin(), this->fields.end(), [&](Player ply){ return ply != Player::NONE; });
 	}
 
 	// The GameNode class constructor.
-	GameNode::GameNode(Player ply = Player::CROSS) : gameState(), lastMove(-1)
+	GameNode::GameNode(Player ply = Player::CROSS) : gameState(), lastMove(-1), currentPlayer(ply)
 	{
-		this->currentPlayer = ply;
 		this->numberOfNodes++;
 	}
 
 	// The GameNode class constructor.
-	GameNode::GameNode(std::shared_ptr<GameNode> base, Player ply, GameBoard board, short move)
+	GameNode::GameNode(std::shared_ptr<GameNode> base, Player ply, GameBoard board, short move) :
+		gameState(board), lastMove(move), parentNode(base), currentPlayer(ply)
 	{
-		this->lastMove = move;
-		this->parentNode = base;
-		this->gameState = board;
-		this->currentPlayer = ply;
 		this->numberOfNodes++;
 	}
 
@@ -112,7 +102,7 @@ namespace TicTacGame
 	}
 
 	// Add node to derived nodes list of a current node.
-	void GameNode::AddChildNode(GameBoard board, int field)
+	void GameNode::AddChildNode(GameBoard board, const int& field)
 	{
 		board.SetField(field, this->currentPlayer);
 		auto nextPlayer = this->currentPlayer == Player::CROSS ? Player::CIRCLE : Player::CROSS;
@@ -143,15 +133,15 @@ namespace TicTacGame
 	}
 
 	// Return number of existing nodes.
-	int GameNode::TotalNumberOfNodes()
+	int GameNode::TotalNumberOfNodes() const
 	{
 		return this->numberOfNodes;
 	}
 
 	// Returns True if the node is a leaf.
-	bool GameNode::Leaf()
+	bool GameNode::Leaf() const
 	{
-		return this->gameState.Win();
+		return (this->gameState.Winner() != Player::NONE) || this->gameState.IsBoardFull();
 	}
 
 	// Recursive generating child nodes in game tree.
@@ -172,7 +162,7 @@ namespace TicTacGame
 	}
 
 	// Return value of game tree node.
-	int GameNode::NodeVale()
+	int GameNode::NodeVale() const
 	{
 		if (this->Leaf())
 		{
@@ -195,32 +185,32 @@ namespace TicTacGame
 		{
 			std::for_each(this->derivedNodes.begin(), this->derivedNodes.end(), [&](std::shared_ptr<GameNode> n) {sum_of_nodes_value += n->NodeVale(); });
 		}
+
 		return sum_of_nodes_value;
 	}
 
 	// Returns value of base move.
-	short GameNode::BaseMove()
+	short GameNode::BaseMove() const
 	{
 		return this->lastMove;
 	}
 
 	// Returns distance from root node.
-	int GameNode::DistanceFromRoot()
+	int GameNode::DistanceFromRoot() const
 	{
 		if (!this->parentNode.expired())
 		{
 			return 1 + this->parentNode.lock()->DistanceFromRoot();
 		}
+
 		return 0;
 	}
 
 	// The Game class constructor.
-	Game::Game(bool ai = false) : availableMovements()
+	Game::Game(bool ai = false) : availableMovements(), playWithAI(ai), player(Player::CROSS)
 	{
-		this->playWithAI = ai;
-		this->player = Player::CROSS;
-		this->gameTree = nullptr;
-		this->rootNode = gameTree;
+		//this->gameTree = nullptr;
+		//this->rootNode = gameTree;
 		if (this->playWithAI)
 		{
 			this->threadGeneratingGameTree = std::async(&Game::generateTree, this);
@@ -228,19 +218,19 @@ namespace TicTacGame
 	}
 
 	// Returns True if AI is Playing.
-	bool Game::AiIsPlaying()
+	bool Game::AiIsPlaying() const
 	{
 		return this->playWithAI;
 	}
 
 	// Returns True if specified player won.
-	bool Game::CheckIfSpecifiedPlayerWon(Player ply)
+	bool Game::CheckIfSpecifiedPlayerWon(const Player& ply) const
 	{
 		return this->board.CheckIfPlayerWon(ply);
 	}
 
 	// Returns number of existing nodes in game tree.
-	int Game::NumberOfExistingNodes()
+	int Game::NumberOfExistingNodes() const
 	{
 		return gameTree->TotalNumberOfNodes();
 	}
@@ -249,7 +239,7 @@ namespace TicTacGame
 	void Game::SwitchPlayer(){ this->player = player == Player::CROSS ? Player::CIRCLE : Player::CROSS; }
 
 	// Returns current Player.
-	Player Game::CurrentPlayer()
+	Player Game::CurrentPlayer() const
 	{
 		return this->player;
 	}
@@ -273,7 +263,7 @@ namespace TicTacGame
 	}
 
 	// Update the root node in tree.
-	void Game::UpdateRootNode(short move)
+	void Game::UpdateRootNode(const short& move)
 	{
 		if (this->rootNode == nullptr)
 		{
@@ -337,9 +327,8 @@ namespace TicTacGame
 	}
 
 	// Returns True if game is over.
-	bool Game::IsGameOver()
+	bool Game::IsGameOver() const
 	{
-		if (this->board.Win() || this->board.IsBoardFull()) return true;
-		return false;
+		return (this->board.Winner() != Player::NONE) || this->board.IsBoardFull();
 	}
 }

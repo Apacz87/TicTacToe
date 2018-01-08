@@ -35,22 +35,22 @@ namespace TicTacGame
 		std::array<Player, 9> fields;
 
 		// Return number of occupied fields in board game.
-		int NumberOfOccupiedFields();
+		int NumberOfOccupiedFields() const;
 
-		// Checking if game is over, someone won.
-		int Win();
+		// Checking if game is over, returns the winner.
+		Player Winner() const;
 
 		// Sets the value on the indicated field.
-		void SetField(int, char);
+		void SetField(const int&, const char&);
 
 		// Return true if the indicated field is free.
-		bool IsFieldFree(int);
+		bool IsFieldFree(const int&) const;
 
 		// Return true if the indicated player won.
-		bool CheckIfPlayerWon(Player);
+		bool CheckIfPlayerWon(const Player&) const;
 
 		// Return true if game board is full.
-		bool IsBoardFull();
+		bool IsBoardFull() const;
 
 	public:
 		// The GameBoard class constructor.
@@ -86,13 +86,13 @@ namespace TicTacGame
 		Player currentPlayer;
 
 		// Add node to derived nodes list of a current node.
-		void AddChildNode(GameBoard, int);
+		void AddChildNode(GameBoard, const int&);
 
 		// Recursive generating child nodes in game tree.
 		void RecursiveTreeWalk(std::shared_ptr<GameNode>);
 
 		// Returns distance from root for current node.
-		int DistanceFromRoot();
+		int DistanceFromRoot() const;
 
 
 	public:
@@ -112,16 +112,16 @@ namespace TicTacGame
 		void GenerateChildNodes();
 
 		// Returns True if the node is a leaf.
-		bool Leaf();
+		bool Leaf() const;
 
 		// Return number of existing nodes.
-		int TotalNumberOfNodes();
+		int TotalNumberOfNodes() const;
 
 		// Return value of game tree node.
-		int NodeVale();
+		int NodeVale() const;
 
 		// Return value of base move for current node.
-		short BaseMove();
+		short BaseMove() const;
 
 	};
 
@@ -163,25 +163,25 @@ namespace TicTacGame
 		bool MakeMove(int);
 
 		// Returns True if game is over.
-		bool IsGameOver();
+		bool IsGameOver() const;
 
 		// Returns True if AI is Playing.
-		bool AiIsPlaying();
+		bool AiIsPlaying() const;
 
 		// Returns True if specified player won.
-		bool CheckIfSpecifiedPlayerWon(Player);
+		bool CheckIfSpecifiedPlayerWon(const Player&) const;
 
 		// Returns current Player.
-		Player CurrentPlayer();
+		Player CurrentPlayer() const;
 
-		// The gae tree root node.
+		// The game tree root node.
 		std::shared_ptr<GameNode> rootNode;
 
 		// Returns number of existing nodes in game tree.
-		int NumberOfExistingNodes();
+		int NumberOfExistingNodes() const;
 
 		// Update the root node in tree.
-		void UpdateRootNode(short);
+		void UpdateRootNode(const short&);
 
 		// Delete unreachable game tree nodes.
 		void CleanUpTree();
