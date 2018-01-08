@@ -37,8 +37,8 @@ namespace TicTacGame
 		// Return number of occupied fields in board game.
 		int NumberOfOccupiedFields() const;
 
-		// Checking if game is over, someone won.
-		int Win() const;
+		// Checking if game is over, returns the winner.
+		Player Winner() const;
 
 		// Sets the value on the indicated field.
 		void SetField(const int&, const char&);

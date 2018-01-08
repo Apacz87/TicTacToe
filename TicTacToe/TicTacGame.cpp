@@ -13,38 +13,38 @@ namespace TicTacGame
 		fields.fill(Player::NONE);
 	}
 
-	// Checking if game is over, someone won.
-	int GameBoard::Win() const
+	// Checking if game is over, returns the winner.
+	Player GameBoard::Winner() const
 	{
+		// Auxiliary variables
 		bool a, b, c, d, e, f, g, h;
 
-		// sukces w linii?
+		// Checking for success in the line:
+		a = ((this->fields[0] == this->fields[1]) && (this->fields[1] == this->fields[2]) && (this->fields[0] != Player::NONE));
+		b = ((this->fields[3] == this->fields[4]) && (this->fields[4] == this->fields[5]) && (this->fields[3] != Player::NONE));
+		c = ((this->fields[6] == this->fields[7]) && (this->fields[7] == this->fields[8]) && (this->fields[6] != Player::NONE));
 
-		a = ((fields[0] == fields[1]) && (fields[1] == fields[2]) && (fields[0] != Player::NONE));
-		b = ((fields[3] == fields[4]) && (fields[4] == fields[5]) && (fields[3] != Player::NONE));
-		c = ((fields[6] == fields[7]) && (fields[7] == fields[8]) && (fields[6] != Player::NONE));
-		// sukces w kolumnie?
+		// Checking success in the column:
+		d = ((this->fields[0] == this->fields[3]) && (this->fields[3] == this->fields[6]) && (this->fields[0] != Player::NONE));
+		e = ((this->fields[1] == this->fields[4]) && (this->fields[4] == this->fields[7]) && (this->fields[1] != Player::NONE));
+		f = ((this->fields[2] == this->fields[5]) && (this->fields[5] == this->fields[8]) && (this->fields[2] != Player::NONE));
 
-		d = ((fields[0] == fields[3]) && (fields[3] == fields[6]) && (fields[0] != Player::NONE));
-		e = ((fields[1] == fields[4]) && (fields[4] == fields[7]) && (fields[1] != Player::NONE));
-		f = ((fields[2] == fields[5]) && (fields[5] == fields[8]) && (fields[2] != Player::NONE));
-
-		// sukces na przekatnej
-
-		g = ((fields[0] == fields[4]) && (fields[4] == fields[8]) && (fields[0] != Player::NONE));
-		h = ((fields[2] == fields[4]) && (fields[4] == fields[6]) && (fields[2] != Player::NONE));
+		// Checking success diagonally:
+		g = ((this->fields[0] == this->fields[4]) && (this->fields[4] == this->fields[8]) && (this->fields[0] != Player::NONE));
+		h = ((this->fields[2] == this->fields[4]) && (this->fields[4] == this->fields[6]) && (this->fields[2] != Player::NONE));
 
 		if (!(a || b || c || d || e || f || g || h))
-			return 0;
+			return Player::NONE; // No winner
 
-		if (a) return 1;    // robimy to aby wiedziec kto wygral
-		if (b) return 3;
-		if (c) return 6;
-		if (d) return 3;
-		if (e) return 4;
-		if (f) return 5;
-		if (g) return 4;
-		if (h) return 4;
+		// Checking who won:
+		if (a) return this->fields[1];
+		if (b) return this->fields[3];
+		if (c) return this->fields[6];
+		if (d) return this->fields[3];
+		if (e) return this->fields[4];
+		if (f) return this->fields[5];
+		if (g) return this->fields[4];
+		if (h) return this->fields[4];
 	}
 
 	// Check that the indicated field is free.
@@ -65,13 +65,7 @@ namespace TicTacGame
 	// Check whether the indicated player won.
 	bool GameBoard::CheckIfPlayerWon(const Player& player) const
 	{
-		auto fieldNumber = this->Win();
-		if (fieldNumber < 1)
-		{
-			return false;
-		}
-
-		return this->fields[fieldNumber] == player;
+		return this->Winner() == player;
 	}
 
 	// Check if game board is full.
@@ -147,7 +141,7 @@ namespace TicTacGame
 	// Returns True if the node is a leaf.
 	bool GameNode::Leaf() const
 	{
-		return this->gameState.Win();
+		return (this->gameState.Winner() != Player::NONE) || this->gameState.IsBoardFull();
 	}
 
 	// Recursive generating child nodes in game tree.
@@ -335,7 +329,6 @@ namespace TicTacGame
 	// Returns True if game is over.
 	bool Game::IsGameOver() const
 	{
-		if (this->board.Win() || this->board.IsBoardFull()) return true;
-		return false;
+		return (this->board.Winner() != Player::NONE) || this->board.IsBoardFull();
 	}
 }
