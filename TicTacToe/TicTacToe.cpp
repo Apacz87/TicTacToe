@@ -17,8 +17,6 @@
 #define THIRD_ROW SECOND_ROW + BUTTON_HEIGH
 
 // Global Variables:
-bool RefreshingLabelThreadWasCreated;           // The value that determines whether the thread has already been created.
-std::thread LabelRefreshingThread;              // The global thread for refreshing label in main window.
 HINSTANCE hInst;								// Current instance
 HWND MainWindowHandle;
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
@@ -81,7 +79,6 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	HACCEL hAccelTable;
 
 	// Initialize global strings
-	RefreshingLabelThreadWasCreated = false;
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_TICTACTOE, szWindowClass, MAX_LOADSTRING);
 	RegisterMainWindow(hInstance);
@@ -154,6 +151,10 @@ HWND InitializationOfMainWindow(HINSTANCE hInstance)
 	HWND hWnd, ButtonOne, ButtonTwo, ButtonThree, ButtonFour, ButtonFive, ButtonSix, ButtonSeven, ButtonEight, ButtonNine, PlayerLabel, CurentPlayerLabel, NodesLabel, NumberOfNodesLabel;
 
 	hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, CW_USEDEFAULT, 0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGH, NULL, NULL, hInstance, NULL);
+	if (!hWnd)
+	{
+		return NULL;
+	}
 
 	ButtonOne = CreateWindow(L"BUTTON", NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_ICON, FIRST_COLUMN, FIRST_ROW, BUTTON_WIDTH, BUTTON_HEIGH, hWnd, (HMENU)IDB_ONE, hInstance, NULL);
 	ButtonTwo = CreateWindow(L"BUTTON", NULL, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_ICON, SECOND_COLUMN, FIRST_ROW, BUTTON_WIDTH, BUTTON_HEIGH, hWnd, (HMENU)IDB_TWO, hInstance, NULL);
@@ -173,11 +174,6 @@ HWND InitializationOfMainWindow(HINSTANCE hInstance)
 	NodesLabel = CreateWindow(L"STATIC", NULL, WS_CHILD | WS_VISIBLE | SS_LEFT, 103, MAIN_WINDOW_HEIGH - 85, 47, 18, hWnd, NULL, hInstance, NULL);
 	NumberOfNodesLabel = CreateWindow(L"STATIC", NULL, WS_CHILD | WS_VISIBLE | SS_LEFT, 151, MAIN_WINDOW_HEIGH - 85, 47, 18, hWnd, (HMENU)IDC_NLABEL, hInstance, NULL);
 
-	if (!hWnd)
-	{
-		return NULL;
-	}
-
 	SetWindowText(PlayerLabel, L"Player:");
 	auto playerSymbol = ticTacGame->CurrentPlayer();
 	SetWindowText(CurentPlayerLabel, (LPCWSTR)&playerSymbol);
@@ -188,20 +184,8 @@ HWND InitializationOfMainWindow(HINSTANCE hInstance)
 
 	ShowWindow(hWnd, SW_SHOW);
 	UpdateWindow(hWnd);
-
-	if (!RefreshingLabelThreadWasCreated)
-	{
-		LabelRefreshingThread = std::thread(NodeLabelRefresh, hWnd);
-		LabelRefreshingThread.detach();
-		RefreshingLabelThreadWasCreated = true;
-	}
-	else
-	{
-		LabelRefreshingThread.~thread();                             // Destruction of the old thread
-		LabelRefreshingThread = std::thread(NodeLabelRefresh, hWnd);
-		LabelRefreshingThread.detach();
-		RefreshingLabelThreadWasCreated = true;
-	}
+	//Creation of the thread for refreshing nodes label
+	std::thread(NodeLabelRefresh, hWnd).detach();
 
 	return hWnd;
 }
@@ -279,13 +263,15 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 					int ret = DialogBox(hInst, MAKEINTRESOURCE(IDD_NEWGAME_DIALOG), hWnd, NewGameDlgProc);
 					if (ret == IDOK)
 					{
-						auto oldWindow = MainWindowHandle;
 						ticTacGame->rootNode = NULL;
 						ticTacGame->CleanUpTree();
-						MainWindowHandle = InitializationOfMainWindow(hInst);
-						// Temporary solution - destruction of the old window closes the application.
-						ShowWindow(oldWindow, SW_HIDE);
-						//DestroyWindow(oldWindow);
+						ticTacGame = std::make_shared<TicTacGame::Game>(CurrentGameSettings.AI);
+						//Resetting game board in GUI.
+						for (size_t fieldNumber = 0; fieldNumber <= 9; fieldNumber++)
+						{
+							SendMessage(GetDlgItem(hWnd, fieldNumber + 301), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)NULL);
+						}
+
 					}
 					else if (ret == IDCANCEL)
 						break;
