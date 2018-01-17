@@ -12,6 +12,7 @@
 #define IDM_ABOUT               105
 #define IDM_EXIT                106
 #define IDM_NEWGAME             107
+#define IDM_GAMEGRAPH           108
 #define IDI_TICTACTOE           151
 #define IDI_SMALL               152
 #define IDC_TICTACTOE           200
