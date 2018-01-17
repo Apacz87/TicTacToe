@@ -277,6 +277,9 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 						break;
 				}
 				break;
+			case IDM_GAMEGRAPH:
+				MessageBox(NULL, L"Functionality not implemented in the current version!", L"Error!", MB_ICONEXCLAMATION);
+				break;
 			case IDM_ABOUT:
 				DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 				break;
