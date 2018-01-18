@@ -7,6 +7,7 @@
 #include <mutex>
 #include <stdexcept>
 #include <vector>
+#include "GameSettings.h"
 
 namespace TicTacGame
 {

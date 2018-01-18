@@ -26,12 +26,7 @@ std::shared_ptr<TicTacGame::Game> ticTacGame;
 
 
 // The Game settings
-typedef struct
-{
-	bool AI;
-} GameSettings;
-
-static GameSettings CurrentGameSettings;
+static TicTacGame::GameSettings CurrentGameSettings;
 
 // Forward declarations of functions included in this code module:
 ATOM				RegisterMainWindow(HINSTANCE hInstance);
