@@ -4,6 +4,7 @@
 //
 
 #define IDS_APP_TITLE           103
+#define IDS_GRAPH_TITLE			104
 
 #define IDR_MAINFRAME           128
 #define IDD_TICTACTOE_DIALOG    102
@@ -17,6 +18,7 @@
 #define IDI_SMALL               152
 #define IDC_TICTACTOE           200
 #define IDC_PLAY_WITH_AI        201
+#define IDC_GRAPH               202
 #define IDI_CROSSICO            210
 #define IDI_CIRCLEICO           211
 #define IDB_ONE                 301
