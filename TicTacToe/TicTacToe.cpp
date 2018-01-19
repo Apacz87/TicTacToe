@@ -335,7 +335,9 @@ BOOL CALLBACK NewGameDlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 				case IDOK:
 					{
 						HWND hPlayWithAi = GetDlgItem(hwnd, IDC_PLAY_WITH_AI);
+						HWND hDropdownlist = GetDlgItem(hwnd, IDC_ALGORITHM_BOX);
 						CurrentGameSettings.AI = (IsDlgButtonChecked(hwnd, IDC_PLAY_WITH_AI) == BST_CHECKED);
+						CurrentGameSettings.Implementation = (TicTacGame::Algorithm)SendMessage(hDropdownlist, CB_GETCURSEL, 0, 0);
 					}
 					EndDialog(hwnd, IDOK);
 					break;
