@@ -23,7 +23,12 @@ TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 HICON hCrossIcon, hCircleIcon;
 std::shared_ptr<TicTacGame::Game> ticTacGame;
-
+// GRAPH WINDOW
+HWND hWndGraphWindow;
+TCHAR GraphWindowTitle[MAX_LOADSTRING];					// The title bar text
+TCHAR GraphWindowClass[MAX_LOADSTRING];			// the main window class name
+#define GRAPH_WINDOW_WIDTH 400
+#define GRAPH_WINDOW_HEIGH 400
 
 // The Game settings
 typedef struct
@@ -38,6 +43,7 @@ ATOM				RegisterMainWindow(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 HWND                InitializationOfMainWindow(HINSTANCE);
 LRESULT CALLBACK	MainWindowProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK	GameGraphProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 BOOL    CALLBACK    NewGameDlgProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -81,6 +87,8 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	// Initialize global strings
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_TICTACTOE, szWindowClass, MAX_LOADSTRING);
+	LoadString(hInstance, IDS_GRAPH_TITLE, GraphWindowTitle, MAX_LOADSTRING);
+	LoadString(hInstance, IDC_GRAPH, GraphWindowClass, MAX_LOADSTRING);
 	RegisterMainWindow(hInstance);
 	hInst = hInstance; // Store instance handle in our global variable
 
@@ -190,6 +198,33 @@ HWND InitializationOfMainWindow(HINSTANCE hInstance)
 	return hWnd;
 }
 
+HWND CreateGraphWindow(HINSTANCE hInstance, HWND hWnd)
+{
+	WNDCLASSEX wcexGraphWindow;
+	memset(&wcexGraphWindow, 0, sizeof(wcexGraphWindow));
+
+	wcexGraphWindow.cbSize = sizeof(WNDCLASSEX);
+	wcexGraphWindow.style = CS_HREDRAW | CS_VREDRAW;//style klasy, nie to samo co style okna
+	wcexGraphWindow.lpfnWndProc = GameGraphProc;//wskaznik do procedury obslugi okna. Funkcja obslugujaca przychodzace komunikaty
+	wcexGraphWindow.cbClsExtra = 0;//dodatkowe bajty pamieci dla klasy
+	wcexGraphWindow.cbWndExtra = 0;//dodatkowe bajty pamieci dla klasy
+	wcexGraphWindow.hInstance = hInstance;//identyfikator aplikacji ktora ma byc wlascicielem okna
+	wcexGraphWindow.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_TICTACTOE));//duza ikona okna, widac ja kiedy wciskasz alt+tab
+	wcexGraphWindow.hCursor = LoadCursor(NULL, IDC_ARROW);//kursor myszki
+	wcexGraphWindow.hbrBackground = (HBRUSH)(COLOR_WINDOW + 2);//tlo okna
+	wcexGraphWindow.lpszMenuName = MAKEINTRESOURCE(IDC_GRAPH);//Nazwa identyfikująca menu naszego okna w pliku zasobów. Bez menu NULL
+	wcexGraphWindow.lpszClassName = L"GraphWindowClass";
+	wcexGraphWindow.hIconSm = LoadIcon(wcexGraphWindow.hInstance, MAKEINTRESOURCE(IDI_SMALL));//Mała ikonka naszej aplikacji. Widać ją w rogu naszego okienka oraz na pasku zadań.
+
+	if (!RegisterClassEx(&wcexGraphWindow))
+	{
+		MessageBox(NULL, L"Window Registration Failed!", L"Error!", MB_ICONEXCLAMATION | MB_OK);
+		return 0;
+	}
+	HMENU hMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDC_GRAPH));
+	return CreateWindowEx(WS_EX_CLIENTEDGE, L"GraphWindowClass", GraphWindowTitle, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_SIZEBOX, CW_USEDEFAULT, 0, GRAPH_WINDOW_WIDTH, GRAPH_WINDOW_HEIGH, hWnd, hMenu, hInstance, NULL);
+}
+
 //
 //  FUNCTION: MainWindowProc(HWND, UINT, WPARAM, LPARAM)
 //
@@ -278,7 +313,10 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 				}
 				break;
 			case IDM_GAMEGRAPH:
-				MessageBox(NULL, L"Functionality not implemented in the current version!", L"Error!", MB_ICONEXCLAMATION);
+				//MessageBox(NULL, L"Functionality not implemented in the current version!", L"Error!", MB_ICONEXCLAMATION);
+				hWndGraphWindow = CreateGraphWindow(hInst, hWnd);
+				ShowWindow(hWndGraphWindow, SW_SHOW);
+				UpdateWindow(hWndGraphWindow);
 				break;
 			case IDM_ABOUT:
 				DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
@@ -351,4 +389,50 @@ BOOL CALLBACK NewGameDlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 			return FALSE;
 	}
 	return TRUE;
+}
+
+void DrawBoard(HDC hDC, std::pair<int, int> point)
+{
+	HPEN blackPen;
+	blackPen = CreatePen(PS_SOLID, 2, 0x000000);
+	SelectObject(hDC, blackPen);
+	Rectangle(hDC, point.first + 10, point.second + 10, point.first + 50, point.second + 50);
+}
+
+void DrawGameTree(HDC hDC)
+{
+	HPEN CzerwonePioro;
+	CzerwonePioro = CreatePen(PS_SOLID, 1, 0x0000FF);
+	SelectObject(hDC, CzerwonePioro);
+	MoveToEx(hDC, 10, 10, NULL);
+	LineTo(hDC, 50, 50);
+	DrawBoard(hDC, std::pair<int, int>(10, 10));
+}
+
+// Message handler for Game Graph window.
+LRESULT CALLBACK GameGraphProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_PAINT:
+		HDC     hDC;
+		PAINTSTRUCT ps;
+		hDC = BeginPaint(hWnd, &ps);
+		DrawGameTree(hDC);
+		EndPaint(hWnd, &ps);
+		break;
+	case WM_CLOSE:
+		DestroyWindow(hWnd);
+		//ShowWindow(hWnd, SW_HIDE);
+		break;
+
+	case WM_DESTROY:
+		//PostQuitMessage(0);
+		break;
+
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+
+	return 0;
 }
