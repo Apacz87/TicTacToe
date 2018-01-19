@@ -17,34 +17,35 @@ namespace TicTacGame
 	Player GameBoard::Winner() const
 	{
 		// Auxiliary variables
-		bool a, b, c, d, e, f, g, h;
+		bool firstLine, secondLine, thirdLine, firstColumn, secondColumn, thirdColumn, firstDiagonal, secondDiagonal;
 
 		// Checking for success in the line:
-		a = ((this->fields[0] == this->fields[1]) && (this->fields[1] == this->fields[2]) && (this->fields[0] != Player::NONE));
-		b = ((this->fields[3] == this->fields[4]) && (this->fields[4] == this->fields[5]) && (this->fields[3] != Player::NONE));
-		c = ((this->fields[6] == this->fields[7]) && (this->fields[7] == this->fields[8]) && (this->fields[6] != Player::NONE));
+		firstLine = ((this->fields[0] == this->fields[1]) && (this->fields[1] == this->fields[2]) && (this->fields[0] != Player::NONE));
+		secondLine = ((this->fields[3] == this->fields[4]) && (this->fields[4] == this->fields[5]) && (this->fields[3] != Player::NONE));
+		thirdLine = ((this->fields[6] == this->fields[7]) && (this->fields[7] == this->fields[8]) && (this->fields[6] != Player::NONE));
 
 		// Checking success in the column:
-		d = ((this->fields[0] == this->fields[3]) && (this->fields[3] == this->fields[6]) && (this->fields[0] != Player::NONE));
-		e = ((this->fields[1] == this->fields[4]) && (this->fields[4] == this->fields[7]) && (this->fields[1] != Player::NONE));
-		f = ((this->fields[2] == this->fields[5]) && (this->fields[5] == this->fields[8]) && (this->fields[2] != Player::NONE));
+		firstColumn = ((this->fields[0] == this->fields[3]) && (this->fields[3] == this->fields[6]) && (this->fields[0] != Player::NONE));
+		secondColumn = ((this->fields[1] == this->fields[4]) && (this->fields[4] == this->fields[7]) && (this->fields[1] != Player::NONE));
+		thirdColumn = ((this->fields[2] == this->fields[5]) && (this->fields[5] == this->fields[8]) && (this->fields[2] != Player::NONE));
 
 		// Checking success diagonally:
-		g = ((this->fields[0] == this->fields[4]) && (this->fields[4] == this->fields[8]) && (this->fields[0] != Player::NONE));
-		h = ((this->fields[2] == this->fields[4]) && (this->fields[4] == this->fields[6]) && (this->fields[2] != Player::NONE));
+		firstDiagonal = ((this->fields[0] == this->fields[4]) && (this->fields[4] == this->fields[8]) && (this->fields[0] != Player::NONE));
+		secondDiagonal = ((this->fields[2] == this->fields[4]) && (this->fields[4] == this->fields[6]) && (this->fields[2] != Player::NONE));
 
-		if (!(a || b || c || d || e || f || g || h))
+		if (!(firstLine || secondLine || thirdLine || firstColumn || secondColumn || thirdColumn || firstDiagonal || secondDiagonal))
 			return Player::NONE; // No winner
 
 		// Checking who won:
-		if (a) return this->fields[1];
-		if (b) return this->fields[3];
-		if (c) return this->fields[6];
-		if (d) return this->fields[3];
-		if (e) return this->fields[4];
-		if (f) return this->fields[5];
-		if (g) return this->fields[4];
-		if (h) return this->fields[4];
+		if (firstLine) return this->fields[1];
+		if (secondLine) return this->fields[3];
+		if (thirdLine) return this->fields[6];
+		if (firstColumn) return this->fields[3];
+		if (secondColumn) return this->fields[4];
+		if (thirdColumn) return this->fields[5];
+		if (firstDiagonal) return this->fields[4];
+		// secondDiagonal varible must be TRUE.
+		return this->fields[4];
 	}
 
 	// Check that the indicated field is free.
