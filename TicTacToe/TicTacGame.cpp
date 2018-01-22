@@ -332,4 +332,67 @@ namespace TicTacGame
 	{
 		return (this->board.Winner() != Player::NONE) || this->board.IsBoardFull();
 	}
+
+	int Game::MinMaxScore(GameBoard board, Player player, int depth)
+	{
+		if (board.CheckIfPlayerWon(player))
+		{
+			return 10 - depth;
+		}
+		else if (board.CheckIfPlayerWon(player == Player::CROSS ? Player::CIRCLE : Player::CROSS))
+		{
+			return depth - 10;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
+	int Game::MinMax(GameBoard board, Player player, int depth)
+	{
+		if (this->IsGameOver())
+		{
+			return this->MinMaxScore(board, player, depth);
+		}
+		else
+		{
+			depth++;
+			player = player == Player::CROSS ? Player::CIRCLE : Player::CROSS;
+			std::vector<int> scores;
+			std::vector<int> moves;
+			scores.reserve(9);
+			moves.reserve(9);
+
+			for (size_t i = 0; i < board.fields.size(); i++)
+			{
+				if (board.IsFieldFree(i))
+				{
+					GameBoard newBoard = board;
+					newBoard.SetField(i, player);
+					moves.emplace_back(i);
+					scores.emplace_back(this->MinMax(newBoard, player, depth));
+				}
+			}
+
+			if (this->CurrentPlayer == player)
+			{
+				/*
+				# This is the max calculation
+				max_score_index = scores.each_with_index.max[1]
+				@choice = moves[max_score_index]
+				return scores[max_score_index]
+				*/
+			}
+			else
+			{
+				/*
+				# This is the min calculation
+				min_score_index = scores.each_with_index.min[1]
+				@choice = moves[min_score_index]
+				return scores[min_score_index]
+				*/
+			}
+		}
+	}
 }

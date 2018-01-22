@@ -195,5 +195,9 @@ namespace TicTacGame
 
 		// Returns the number of the best available move for the indicated player.
 		int BestAvailableMove(const Player&) const;
+
+		int Game::MinMaxScore(GameBoard, Player, int);
+		int Game::MinMax(GameBoard, Player, int);
+
 	};
 }
