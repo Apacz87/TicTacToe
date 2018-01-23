@@ -1,5 +1,4 @@
 // TicTacToe.cpp : Defines the entry point for the application.
-//
 
 #include "stdafx.h"
 #include "TicTacToe.h"
@@ -213,13 +212,14 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		wmEvent = HIWORD(wParam);
 		if (wmId == IDB_ONE || wmId == IDB_TWO || wmId == IDB_THREE || wmId == IDB_FOUR || wmId == IDB_FIVE || wmId == IDB_SIX || wmId == IDB_SEVEN || wmId == IDB_EIGHT || wmId == IDB_NINE)
 		{
-			if (!ticTacGame->MakeMove((wmId % 10) - 1))
+			if (!ticTacGame->MoveIsAllowed(((wmId % 10) - 1)))
 			{
 				MessageBox(NULL, L"You're cheating!", L"Error!", MB_ICONEXCLAMATION);
 				break;
 			}
 
 			SendMessage(GetDlgItem(hWnd, wmId), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)(ticTacGame->CurrentPlayer() == TicTacGame::Player::CROSS ? hCrossIcon : hCircleIcon));
+			ticTacGame->MakeMove(((wmId % 10) - 1));
 			if (ticTacGame->IsGameOver())
 			{
 				EndGame();
@@ -229,24 +229,15 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 			if (ticTacGame->AiIsPlaying())
 			{
-				ticTacGame->UpdateRootNode((wmId % 10) - 1);
 				auto x = ticTacGame->BestAvailableMove();
-				ticTacGame->MakeMove(x);
 				SendMessage(GetDlgItem(hWnd, x + 301), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)(ticTacGame->CurrentPlayer() == TicTacGame::Player::CROSS ? hCrossIcon : hCircleIcon));
+				ticTacGame->MakeMove(x);
 				if (ticTacGame->IsGameOver())
 				{
 					EndGame();
 					DestroyWindow(hWnd);
 					break;
 				}
-
-				ticTacGame->UpdateRootNode(x);
-				ticTacGame->CleanUpTree();
-			}
-
-			if (!ticTacGame->AiIsPlaying())
-			{
-				ticTacGame->SwitchPlayer();
 			}
 
 			auto cp = ticTacGame->CurrentPlayer();
@@ -264,13 +255,15 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 					if (ret == IDOK)
 					{
 						ticTacGame->rootNode = NULL;
-						ticTacGame->CleanUpTree();
 						ticTacGame = std::make_shared<TicTacGame::Game>(CurrentGameSettings.AI);
 						//Resetting game board in GUI.
 						for (size_t fieldNumber = 0; fieldNumber <= 9; fieldNumber++)
 						{
 							SendMessage(GetDlgItem(hWnd, fieldNumber + 301), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)NULL);
 						}
+
+						auto cp = ticTacGame->CurrentPlayer();
+						SetWindowText(GetDlgItem(hWnd, IDC_PLABEL), (LPCWSTR)&cp);
 
 					}
 					else if (ret == IDCANCEL)
