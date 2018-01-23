@@ -310,7 +310,7 @@ namespace TicTacGame
 		}
 		else
 		{
-			return this->MinMax(this->board, player, 0);
+			return this->MinMaxBestMove();
 		}
 	}
 
@@ -345,13 +345,13 @@ namespace TicTacGame
 	}
 
 	// The score of game state.
-	int Game::MinMaxScore(const GameBoard& board, const Player& player, const int& depth) const
+	int Game::MinMaxScore(const GameBoard& board, const int& depth) const
 	{
-		if (board.CheckIfPlayerWon(player))
+		if (board.CheckIfPlayerWon(this->CurrentPlayer()))
 		{
 			return 10 - depth;
 		}
-		else if (board.CheckIfPlayerWon(player == Player::CROSS ? Player::CIRCLE : Player::CROSS))
+		else if (board.CheckIfPlayerWon(this->CurrentPlayer() == Player::CROSS ? Player::CIRCLE : Player::CROSS))
 		{
 			return depth - 10;
 		}
@@ -361,12 +361,12 @@ namespace TicTacGame
 		}
 	}
 
-	// Returns the number of the best available move for the current player.
+	// Returns the value of possible game state.
 	int Game::MinMax(GameBoard board, Player player, int depth) const
 	{
 		if ((board.Winner() != Player::NONE) || board.IsBoardFull())
 		{
-			return this->MinMaxScore(board, player, depth);
+			return this->MinMaxScore(board, depth);
 		}
 		else
 		{
@@ -385,17 +385,38 @@ namespace TicTacGame
 
 			if (this->CurrentPlayer() == player)
 			{
-				return std::max_element(availableMovements.begin(), availableMovements.end(),
+				auto maxMove = std::max_element(availableMovements.begin(), availableMovements.end(),
 					[](const std::pair<int, int>& p1, const std::pair<int, int>& p2) {
 					return p1.second < p2.second; })->first;
+				return availableMovements[maxMove];
 			}
 			else
 			{
-				return std::min_element(availableMovements.begin(), availableMovements.end(),
+				auto minMove = std::min_element(availableMovements.begin(), availableMovements.end(),
 					[](const std::pair<int, int>& p1, const std::pair<int, int>& p2) {
 					return p1.second < p2.second; })->first;
+				return availableMovements[minMove];
 			}
 		}
+	}
+
+	// Returns the number of the best available move for the current player.
+	int Game::MinMaxBestMove() const
+	{
+		std::map<short, int> availableMovements;
+		for (size_t i = 0; i < this->board.fields.size(); i++)
+		{
+			if (this->board.IsFieldFree(i))
+			{
+				GameBoard newBoard = this->board;
+				newBoard.SetField(i, this->CurrentPlayer());
+				availableMovements.emplace(std::make_pair(i, this->MinMax(newBoard, this->CurrentPlayer(), 1)));
+			}
+		}
+
+		return std::max_element(availableMovements.begin(), availableMovements.end(),
+			[](const std::pair<int, int>& p1, const std::pair<int, int>& p2) {
+			return p1.second < p2.second; })->first;
 	}
 
 	// Returns True if move is allowed

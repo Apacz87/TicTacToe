@@ -167,10 +167,13 @@ namespace TicTacGame
 		std::shared_ptr<GameNode> generateTree();
 
 		// The score of game state.
-		int Game::MinMaxScore(const GameBoard&, const Player&, const int&) const;
+		int MinMaxScore(const GameBoard&, const int&) const;
+
+		// Returns the value of possible game state.
+		int MinMax(GameBoard, Player, int) const;
 
 		// Returns the number of the best available move for the current player.
-		int Game::MinMax(GameBoard, Player, int) const;
+		int MinMaxBestMove() const;
 
 	public:
 		// The Game class constructor.
