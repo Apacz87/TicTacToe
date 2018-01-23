@@ -30,6 +30,9 @@
     <ClInclude Include="TicTacGame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GameSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

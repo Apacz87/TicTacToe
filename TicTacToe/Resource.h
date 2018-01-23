@@ -18,7 +18,8 @@
 #define IDI_SMALL               152
 #define IDC_TICTACTOE           200
 #define IDC_PLAY_WITH_AI        201
-#define IDC_GRAPH               202
+#define IDC_ALGORITHM_BOX       202
+#define IDC_GRAPH               203
 #define IDI_CROSSICO            210
 #define IDI_CIRCLEICO           211
 #define IDB_ONE                 301

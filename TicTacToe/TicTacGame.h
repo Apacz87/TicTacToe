@@ -7,6 +7,7 @@
 #include <mutex>
 #include <stdexcept>
 #include <vector>
+#include "GameSettings.h"
 
 namespace TicTacGame
 {
@@ -129,6 +130,9 @@ namespace TicTacGame
 	class Game
 	{
 	private:
+		// The algorithm implementation selected by user.
+		Algorithm selectedAlgorithm;
+
 		// The current player.
 		Player player;
 
@@ -153,14 +157,33 @@ namespace TicTacGame
 		// Update available movements container.
 		void UpdateAvailableMovements();
 
+		// Update the root node in tree.
+		void UpdateRootNode(const short&);
+
+		// Delete unreachable game tree nodes.
+		void CleanUpTree();
+
 		// Generates new game tree.
 		std::shared_ptr<GameNode> generateTree();
+
+		// The score of game state.
+		int MinMaxScore(const GameBoard&, const int&) const;
+
+		// Returns the value of possible game state.
+		int MinMax(GameBoard, Player, int) const;
+
+		// Returns the number of the best available move for the current player.
+		int MinMaxBestMove() const;
+
 	public:
 		// The Game class constructor.
-		Game(bool);
+		Game(const GameSettings&);
 
 		// Make move in game board and returns true if succeed.
-		bool MakeMove(int);
+		bool MakeMove(const int&);
+
+		// Returns True if move is allowed
+		bool MoveIsAllowed(const int&) const;
 
 		// Returns True if game is over.
 		bool IsGameOver() const;
@@ -180,12 +203,6 @@ namespace TicTacGame
 		// Returns number of existing nodes in game tree.
 		int NumberOfExistingNodes() const;
 
-		// Update the root node in tree.
-		void UpdateRootNode(const short&);
-
-		// Delete unreachable game tree nodes.
-		void CleanUpTree();
-
 		// Switch current player.
 		void SwitchPlayer();
 
@@ -194,5 +211,6 @@ namespace TicTacGame
 
 		// Returns the number of the best available move for the indicated player.
 		int BestAvailableMove(const Player&) const;
+
 	};
 }
