@@ -7,6 +7,7 @@
 #include <mutex>
 #include <stdexcept>
 #include <vector>
+#include "GameSettings.h"
 
 namespace TicTacGame
 {
@@ -129,6 +130,9 @@ namespace TicTacGame
 	class Game
 	{
 	private:
+		// The algorithm implementation selected by user.
+		Algorithm selectedAlgorithm;
+
 		// The current player.
 		Player player;
 
@@ -161,9 +165,19 @@ namespace TicTacGame
 
 		// Generates new game tree.
 		std::shared_ptr<GameNode> generateTree();
+
+		// The score of game state.
+		int MinMaxScore(const GameBoard&, const int&) const;
+
+		// Returns the value of possible game state.
+		int MinMax(GameBoard, Player, int) const;
+
+		// Returns the number of the best available move for the current player.
+		int MinMaxBestMove() const;
+
 	public:
 		// The Game class constructor.
-		Game(bool);
+		Game(const GameSettings&);
 
 		// Make move in game board and returns true if succeed.
 		bool MakeMove(const int&);
@@ -197,5 +211,6 @@ namespace TicTacGame
 
 		// Returns the number of the best available move for the indicated player.
 		int BestAvailableMove(const Player&) const;
+
 	};
 }

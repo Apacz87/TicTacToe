@@ -25,12 +25,7 @@ std::shared_ptr<TicTacGame::Game> ticTacGame;
 
 
 // The Game settings
-typedef struct
-{
-	bool AI;
-} GameSettings;
-
-static GameSettings CurrentGameSettings;
+static TicTacGame::GameSettings CurrentGameSettings;
 
 // Forward declarations of functions included in this code module:
 ATOM				RegisterMainWindow(HINSTANCE hInstance);
@@ -146,7 +141,7 @@ ATOM RegisterMainWindow(HINSTANCE hInstance)
 //
 HWND InitializationOfMainWindow(HINSTANCE hInstance)
 {
-	ticTacGame = std::make_shared<TicTacGame::Game>(CurrentGameSettings.AI);
+	ticTacGame = std::make_shared<TicTacGame::Game>(CurrentGameSettings);
 	HWND hWnd, ButtonOne, ButtonTwo, ButtonThree, ButtonFour, ButtonFive, ButtonSix, ButtonSeven, ButtonEight, ButtonNine, PlayerLabel, CurentPlayerLabel, NodesLabel, NumberOfNodesLabel;
 
 	hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, CW_USEDEFAULT, 0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGH, NULL, NULL, hInstance, NULL);
@@ -255,7 +250,7 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 					if (ret == IDOK)
 					{
 						ticTacGame->rootNode = NULL;
-						ticTacGame = std::make_shared<TicTacGame::Game>(CurrentGameSettings.AI);
+						ticTacGame = std::make_shared<TicTacGame::Game>(CurrentGameSettings);
 						//Resetting game board in GUI.
 						for (size_t fieldNumber = 0; fieldNumber <= 9; fieldNumber++)
 						{
@@ -320,7 +315,12 @@ BOOL CALLBACK NewGameDlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 	switch (Msg)
 	{
 		case WM_INITDIALOG:
-			{ }
+			{
+				HWND hDropdownlist = GetDlgItem(hwnd, IDC_ALGORITHM_BOX);
+				SendMessage(hDropdownlist, CB_ADDSTRING, 0, (LPARAM)L"MinMax - Game Tree");
+				SendMessage(hDropdownlist, CB_ADDSTRING, 0, (LPARAM)L"MinMax - Recursively");
+				SendMessage(hDropdownlist, CB_SETCURSEL, 0, NULL);
+			}
 			break;
 		case WM_COMMAND:
 			switch (LOWORD(wParam))
@@ -328,7 +328,9 @@ BOOL CALLBACK NewGameDlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 				case IDOK:
 					{
 						HWND hPlayWithAi = GetDlgItem(hwnd, IDC_PLAY_WITH_AI);
+						HWND hDropdownlist = GetDlgItem(hwnd, IDC_ALGORITHM_BOX);
 						CurrentGameSettings.AI = (IsDlgButtonChecked(hwnd, IDC_PLAY_WITH_AI) == BST_CHECKED);
+						CurrentGameSettings.Implementation = (TicTacGame::Algorithm)SendMessage(hDropdownlist, CB_GETCURSEL, 0, 0);
 					}
 					EndDialog(hwnd, IDOK);
 					break;
