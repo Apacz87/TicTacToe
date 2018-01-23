@@ -157,6 +157,12 @@ namespace TicTacGame
 		// Update available movements container.
 		void UpdateAvailableMovements();
 
+		// Update the root node in tree.
+		void UpdateRootNode(const short&);
+
+		// Delete unreachable game tree nodes.
+		void CleanUpTree();
+
 		// Generates new game tree.
 		std::shared_ptr<GameNode> generateTree();
 
@@ -171,7 +177,10 @@ namespace TicTacGame
 		Game(const GameSettings&);
 
 		// Make move in game board and returns true if succeed.
-		bool MakeMove(int);
+		bool MakeMove(const int&);
+
+		// Returns True if move is allowed
+		bool MoveIsAllowed(const int&) const;
 
 		// Returns True if game is over.
 		bool IsGameOver() const;
@@ -190,12 +199,6 @@ namespace TicTacGame
 
 		// Returns number of existing nodes in game tree.
 		int NumberOfExistingNodes() const;
-
-		// Update the root node in tree.
-		void UpdateRootNode(const short&);
-
-		// Delete unreachable game tree nodes.
-		void CleanUpTree();
 
 		// Switch current player.
 		void SwitchPlayer();

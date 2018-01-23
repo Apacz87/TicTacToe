@@ -273,7 +273,7 @@ namespace TicTacGame
 		auto selectedNode = std::find_if(this->rootNode->derivedNodes.begin(), this->rootNode->derivedNodes.end(), [move](std::shared_ptr<GameNode> node){ return node->BaseMove() == move; });
 		this->rootNode = selectedNode->get()->shared_from_this();
 		this->UpdateAvailableMovements();
-		this->SwitchPlayer();
+		//this->SwitchPlayer();
 	}
 
 	// Delete the old Nodes.
@@ -322,11 +322,18 @@ namespace TicTacGame
 	}
 
 	// Make move in game board and returns true if succeed.
-	bool Game::MakeMove(int f)
+	bool Game::MakeMove(const int& f)
 	{
 		if (this->board.IsFieldFree(f))
 		{
 			this->board.SetField(f, this->CurrentPlayer());
+			if (this->AiIsPlaying())
+			{
+				this->UpdateRootNode(f);
+				this->CleanUpTree();
+			}
+
+			this->SwitchPlayer();
 			return true;
 		}
 		return false;
@@ -390,5 +397,11 @@ namespace TicTacGame
 					return p1.second < p2.second; })->first;
 			}
 		}
+	}
+
+	// Returns True if move is allowed
+	bool Game::MoveIsAllowed(const int& move) const
+	{
+		return this->board.IsFieldFree(move);
 	}
 }
