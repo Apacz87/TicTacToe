@@ -142,7 +142,7 @@ ATOM RegisterMainWindow(HINSTANCE hInstance)
 //
 HWND InitializationOfMainWindow(HINSTANCE hInstance)
 {
-	ticTacGame = std::make_shared<TicTacGame::Game>(CurrentGameSettings.AI);
+	ticTacGame = std::make_shared<TicTacGame::Game>(CurrentGameSettings);
 	HWND hWnd, ButtonOne, ButtonTwo, ButtonThree, ButtonFour, ButtonFive, ButtonSix, ButtonSeven, ButtonEight, ButtonNine, PlayerLabel, CurentPlayerLabel, NodesLabel, NumberOfNodesLabel;
 
 	hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, CW_USEDEFAULT, 0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGH, NULL, NULL, hInstance, NULL);
@@ -260,7 +260,7 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 					{
 						ticTacGame->rootNode = NULL;
 						ticTacGame->CleanUpTree();
-						ticTacGame = std::make_shared<TicTacGame::Game>(CurrentGameSettings.AI);
+						ticTacGame = std::make_shared<TicTacGame::Game>(CurrentGameSettings);
 						//Resetting game board in GUI.
 						for (size_t fieldNumber = 0; fieldNumber <= 9; fieldNumber++)
 						{
