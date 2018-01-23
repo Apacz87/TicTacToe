@@ -210,7 +210,7 @@ namespace TicTacGame
 	// The Game class constructor.
 	Game::Game(const GameSettings& settings) : availableMovements(), playWithAI(settings.AI), selectedAlgorithm(settings.Implementation), player(Player::CROSS)
 	{
-		if (this->playWithAI)
+		if (this->playWithAI && (this->selectedAlgorithm == Algorithm::GAMETREE))
 		{
 			this->threadGeneratingGameTree = std::async(&Game::generateTree, this);
 		}
@@ -273,7 +273,6 @@ namespace TicTacGame
 		auto selectedNode = std::find_if(this->rootNode->derivedNodes.begin(), this->rootNode->derivedNodes.end(), [move](std::shared_ptr<GameNode> node){ return node->BaseMove() == move; });
 		this->rootNode = selectedNode->get()->shared_from_this();
 		this->UpdateAvailableMovements();
-		//this->SwitchPlayer();
 	}
 
 	// Delete the old Nodes.
@@ -327,7 +326,7 @@ namespace TicTacGame
 		if (this->board.IsFieldFree(f))
 		{
 			this->board.SetField(f, this->CurrentPlayer());
-			if (this->AiIsPlaying())
+			if (this->AiIsPlaying() && (this->selectedAlgorithm == Algorithm::GAMETREE))
 			{
 				this->UpdateRootNode(f);
 				this->CleanUpTree();
