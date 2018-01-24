@@ -169,25 +169,30 @@ namespace TicTacGame
 		{
 			if (this->gameState.CheckIfPlayerWon(Player::CROSS))
 			{
-				auto tmp = 10 - this->DistanceFromRoot();
-				return tmp;
+				return 10 - this->DistanceFromRoot();
 			}
 			else if (this->gameState.CheckIfPlayerWon(Player::CIRCLE))
 			{
-				auto tmp = this->DistanceFromRoot() - 10;
-				return tmp;
+				return this->DistanceFromRoot() - 10;
 			}
 
 			return 0;
 		}
-
-		auto sum_of_nodes_value = 0;
-		if (!this->derivedNodes.empty())
+		else if (this->derivedNodes.empty())
 		{
-			std::for_each(this->derivedNodes.begin(), this->derivedNodes.end(), [&](std::shared_ptr<GameNode> n) {sum_of_nodes_value += n->NodeVale(); });
+			return 0;
 		}
 
-		return sum_of_nodes_value;
+		if (this->currentPlayer == Player::CROSS)
+		{
+			return (*std::max_element(this->derivedNodes.begin(), this->derivedNodes.end(),
+				[](const std::shared_ptr<GameNode> p1, const std::shared_ptr<GameNode> p2) {
+				return p1->NodeVale() < p2->NodeVale(); }))->NodeVale();
+		}
+
+		return (*std::min_element(this->derivedNodes.begin(), this->derivedNodes.end(),
+			[](const std::shared_ptr<GameNode> p1, const std::shared_ptr<GameNode> p2) {
+			return p1->NodeVale() < p2->NodeVale(); }))->NodeVale();
 	}
 
 	// Returns value of base move.
