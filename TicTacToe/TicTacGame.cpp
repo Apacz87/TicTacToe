@@ -169,25 +169,30 @@ namespace TicTacGame
 		{
 			if (this->gameState.CheckIfPlayerWon(Player::CROSS))
 			{
-				auto tmp = 10 - this->DistanceFromRoot();
-				return tmp;
+				return 10 - this->DistanceFromRoot();
 			}
 			else if (this->gameState.CheckIfPlayerWon(Player::CIRCLE))
 			{
-				auto tmp = this->DistanceFromRoot() - 10;
-				return tmp;
+				return this->DistanceFromRoot() - 10;
 			}
 
 			return 0;
 		}
-
-		auto sum_of_nodes_value = 0;
-		if (!this->derivedNodes.empty())
+		else if (this->derivedNodes.empty())
 		{
-			std::for_each(this->derivedNodes.begin(), this->derivedNodes.end(), [&](std::shared_ptr<GameNode> n) {sum_of_nodes_value += n->NodeVale(); });
+			return 0;
 		}
 
-		return sum_of_nodes_value;
+		if (this->currentPlayer == Player::CROSS)
+		{
+			return (*std::max_element(this->derivedNodes.begin(), this->derivedNodes.end(),
+				[](const std::shared_ptr<GameNode> p1, const std::shared_ptr<GameNode> p2) {
+				return p1->NodeVale() < p2->NodeVale(); }))->NodeVale();
+		}
+
+		return (*std::min_element(this->derivedNodes.begin(), this->derivedNodes.end(),
+			[](const std::shared_ptr<GameNode> p1, const std::shared_ptr<GameNode> p2) {
+			return p1->NodeVale() < p2->NodeVale(); }))->NodeVale();
 	}
 
 	// Returns value of base move.
@@ -216,6 +221,15 @@ namespace TicTacGame
 		}
 	}
 
+	// The Game class destructor.
+	Game::~Game()
+	{
+		if (this->rootNode != nullptr)
+		{
+			this->rootNode->DeleteChildNodes();
+		}
+	}
+
 	// Returns True if AI is Playing.
 	bool Game::AiIsPlaying() const
 	{
@@ -231,7 +245,7 @@ namespace TicTacGame
 	// Returns number of existing nodes in game tree.
 	int Game::NumberOfExistingNodes() const
 	{
-		return gameTree->TotalNumberOfNodes();
+		return rootNode->TotalNumberOfNodes();
 	}
 
 	// Switch current player.
@@ -266,8 +280,7 @@ namespace TicTacGame
 	{
 		if (this->rootNode == nullptr)
 		{
-			this->gameTree = this->threadGeneratingGameTree.get();
-			this->rootNode = this->gameTree;
+			this->rootNode = this->threadGeneratingGameTree.get();
 		}
 
 		auto selectedNode = std::find_if(this->rootNode->derivedNodes.begin(), this->rootNode->derivedNodes.end(), [move](std::shared_ptr<GameNode> node){ return node->BaseMove() == move; });
@@ -284,11 +297,11 @@ namespace TicTacGame
 	// Delete unreachable game tree nodes.
 	void Game::CleanUpTree()
 	{
-		if (this->gameTree != this->rootNode)
+		if (!this->rootNode->parentNode.expired())
 		{
-			std::thread cleanUpThread(&Game::DeleteOldNodes, this, this->gameTree);
+			auto oldRootNode = this->rootNode->parentNode.lock();
+			std::thread cleanUpThread(&Game::DeleteOldNodes, this, oldRootNode);
 			cleanUpThread.detach();
-			this->gameTree = this->rootNode;
 		}
 	}
 
@@ -321,21 +334,21 @@ namespace TicTacGame
 	}
 
 	// Make move in game board and returns true if succeed.
-	bool Game::MakeMove(const int& f)
+	void Game::MakeMove(const int& f)
 	{
-		if (this->board.IsFieldFree(f))
+		if (!this->board.IsFieldFree(f))
 		{
-			this->board.SetField(f, this->CurrentPlayer());
-			if (this->AiIsPlaying() && (this->selectedAlgorithm == Algorithm::GAMETREE))
-			{
-				this->UpdateRootNode(f);
-				this->CleanUpTree();
-			}
-
-			this->SwitchPlayer();
-			return true;
+			throw std::invalid_argument("The selected field is already occupied!");
 		}
-		return false;
+		
+		this->board.SetField(f, this->CurrentPlayer());
+		if (this->AiIsPlaying() && (this->selectedAlgorithm == Algorithm::GAMETREE))
+		{
+			this->UpdateRootNode(f);
+			this->CleanUpTree();
+		}
+
+		this->SwitchPlayer();
 	}
 
 	// Returns True if game is over.

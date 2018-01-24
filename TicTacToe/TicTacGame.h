@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <exception>
 #include <future>
 #include <map>
 #include <memory>
@@ -142,14 +143,14 @@ namespace TicTacGame
 		// The game board.
 		GameBoard board;
 
-		// The game tree.
-		std::shared_ptr<GameNode> gameTree;
-
 		// Thread generating the game tree.
 		std::future<std::shared_ptr<GameNode>> threadGeneratingGameTree;
 
 		// The available movements in current game state.
 		std::map<short, int> availableMovements;
+
+		// The game tree root node.
+		std::shared_ptr<GameNode> rootNode;
 
 		// Delete the old Nodes.
 		void DeleteOldNodes(std::shared_ptr<GameNode>);
@@ -179,8 +180,11 @@ namespace TicTacGame
 		// The Game class constructor.
 		Game(const GameSettings&);
 
-		// Make move in game board and returns true if succeed.
-		bool MakeMove(const int&);
+		// The Game class destructor.
+		~Game();
+
+		// Make move in game board.
+		void MakeMove(const int&);
 
 		// Returns True if move is allowed
 		bool MoveIsAllowed(const int&) const;
@@ -196,9 +200,6 @@ namespace TicTacGame
 
 		// Returns current Player.
 		Player CurrentPlayer() const;
-
-		// The game tree root node.
-		std::shared_ptr<GameNode> rootNode;
 
 		// Returns number of existing nodes in game tree.
 		int NumberOfExistingNodes() const;
