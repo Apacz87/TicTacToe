@@ -284,7 +284,6 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 					int ret = DialogBox(hInst, MAKEINTRESOURCE(IDD_NEWGAME_DIALOG), hWnd, NewGameDlgProc);
 					if (ret == IDOK)
 					{
-						ticTacGame->rootNode = NULL;
 						ticTacGame = std::make_shared<TicTacGame::Game>(CurrentGameSettings);
 						//Resetting game board in GUI.
 						for (size_t fieldNumber = 0; fieldNumber <= 9; fieldNumber++)
