@@ -216,6 +216,15 @@ namespace TicTacGame
 		}
 	}
 
+	// The Game class destructor.
+	Game::~Game()
+	{
+		if (this->rootNode != nullptr)
+		{
+			this->rootNode->DeleteChildNodes();
+		}
+	}
+
 	// Returns True if AI is Playing.
 	bool Game::AiIsPlaying() const
 	{
@@ -231,7 +240,7 @@ namespace TicTacGame
 	// Returns number of existing nodes in game tree.
 	int Game::NumberOfExistingNodes() const
 	{
-		return gameTree->TotalNumberOfNodes();
+		return rootNode->TotalNumberOfNodes();
 	}
 
 	// Switch current player.
@@ -266,8 +275,7 @@ namespace TicTacGame
 	{
 		if (this->rootNode == nullptr)
 		{
-			this->gameTree = this->threadGeneratingGameTree.get();
-			this->rootNode = this->gameTree;
+			this->rootNode = this->threadGeneratingGameTree.get();
 		}
 
 		auto selectedNode = std::find_if(this->rootNode->derivedNodes.begin(), this->rootNode->derivedNodes.end(), [move](std::shared_ptr<GameNode> node){ return node->BaseMove() == move; });
@@ -284,11 +292,11 @@ namespace TicTacGame
 	// Delete unreachable game tree nodes.
 	void Game::CleanUpTree()
 	{
-		if (this->gameTree != this->rootNode)
+		if (!this->rootNode->parentNode.expired())
 		{
-			std::thread cleanUpThread(&Game::DeleteOldNodes, this, this->gameTree);
+			auto oldRootNode = this->rootNode->parentNode.lock();
+			std::thread cleanUpThread(&Game::DeleteOldNodes, this, oldRootNode);
 			cleanUpThread.detach();
-			this->gameTree = this->rootNode;
 		}
 	}
 
@@ -321,21 +329,21 @@ namespace TicTacGame
 	}
 
 	// Make move in game board and returns true if succeed.
-	bool Game::MakeMove(const int& f)
+	void Game::MakeMove(const int& f)
 	{
-		if (this->board.IsFieldFree(f))
+		if (!this->board.IsFieldFree(f))
 		{
-			this->board.SetField(f, this->CurrentPlayer());
-			if (this->AiIsPlaying() && (this->selectedAlgorithm == Algorithm::GAMETREE))
-			{
-				this->UpdateRootNode(f);
-				this->CleanUpTree();
-			}
-
-			this->SwitchPlayer();
-			return true;
+			throw std::invalid_argument("The selected field is already occupied!");
 		}
-		return false;
+		
+		this->board.SetField(f, this->CurrentPlayer());
+		if (this->AiIsPlaying() && (this->selectedAlgorithm == Algorithm::GAMETREE))
+		{
+			this->UpdateRootNode(f);
+			this->CleanUpTree();
+		}
+
+		this->SwitchPlayer();
 	}
 
 	// Returns True if game is over.
