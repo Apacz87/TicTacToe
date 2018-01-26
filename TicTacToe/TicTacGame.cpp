@@ -10,75 +10,95 @@ namespace TicTacGame
 	// The GameBoard class constructor.
 	GameBoard::GameBoard()
 	{
-		fields.fill(Player::NONE);
+		this->m_fields.fill(Player::NONE);
 	}
 
 	// Checking if game is over, returns the winner.
-	Player GameBoard::Winner() const
+	Player GameBoard::winner() const
 	{
 		// Auxiliary variables
 		bool firstLine, secondLine, thirdLine, firstColumn, secondColumn, thirdColumn, firstDiagonal, secondDiagonal;
 
 		// Checking for success in the line:
-		firstLine = ((this->fields[0] == this->fields[1]) && (this->fields[1] == this->fields[2]) && (this->fields[0] != Player::NONE));
-		secondLine = ((this->fields[3] == this->fields[4]) && (this->fields[4] == this->fields[5]) && (this->fields[3] != Player::NONE));
-		thirdLine = ((this->fields[6] == this->fields[7]) && (this->fields[7] == this->fields[8]) && (this->fields[6] != Player::NONE));
+		firstLine = ((this->m_fields[0] == this->m_fields[1]) && (this->m_fields[1] == this->m_fields[2]) && (this->m_fields[0] != Player::NONE));
+		secondLine = ((this->m_fields[3] == this->m_fields[4]) && (this->m_fields[4] == this->m_fields[5]) && (this->m_fields[3] != Player::NONE));
+		thirdLine = ((this->m_fields[6] == this->m_fields[7]) && (this->m_fields[7] == this->m_fields[8]) && (this->m_fields[6] != Player::NONE));
 
 		// Checking success in the column:
-		firstColumn = ((this->fields[0] == this->fields[3]) && (this->fields[3] == this->fields[6]) && (this->fields[0] != Player::NONE));
-		secondColumn = ((this->fields[1] == this->fields[4]) && (this->fields[4] == this->fields[7]) && (this->fields[1] != Player::NONE));
-		thirdColumn = ((this->fields[2] == this->fields[5]) && (this->fields[5] == this->fields[8]) && (this->fields[2] != Player::NONE));
+		firstColumn = ((this->m_fields[0] == this->m_fields[3]) && (this->m_fields[3] == this->m_fields[6]) && (this->m_fields[0] != Player::NONE));
+		secondColumn = ((this->m_fields[1] == this->m_fields[4]) && (this->m_fields[4] == this->m_fields[7]) && (this->m_fields[1] != Player::NONE));
+		thirdColumn = ((this->m_fields[2] == this->m_fields[5]) && (this->m_fields[5] == this->m_fields[8]) && (this->m_fields[2] != Player::NONE));
 
 		// Checking success diagonally:
-		firstDiagonal = ((this->fields[0] == this->fields[4]) && (this->fields[4] == this->fields[8]) && (this->fields[0] != Player::NONE));
-		secondDiagonal = ((this->fields[2] == this->fields[4]) && (this->fields[4] == this->fields[6]) && (this->fields[2] != Player::NONE));
+		firstDiagonal = ((this->m_fields[0] == this->m_fields[4]) && (this->m_fields[4] == this->m_fields[8]) && (this->m_fields[0] != Player::NONE));
+		secondDiagonal = ((this->m_fields[2] == this->m_fields[4]) && (this->m_fields[4] == this->m_fields[6]) && (this->m_fields[2] != Player::NONE));
 
 		if (!(firstLine || secondLine || thirdLine || firstColumn || secondColumn || thirdColumn || firstDiagonal || secondDiagonal))
 			return Player::NONE; // No winner
 
 		// Checking who won:
-		if (firstLine) return this->fields[1];
-		if (secondLine) return this->fields[3];
-		if (thirdLine) return this->fields[6];
-		if (firstColumn) return this->fields[3];
-		if (secondColumn) return this->fields[4];
-		if (thirdColumn) return this->fields[5];
-		if (firstDiagonal) return this->fields[4];
+		if (firstLine) return this->m_fields[1];
+		if (secondLine) return this->m_fields[3];
+		if (thirdLine) return this->m_fields[6];
+		if (firstColumn) return this->m_fields[3];
+		if (secondColumn) return this->m_fields[4];
+		if (thirdColumn) return this->m_fields[5];
+		if (firstDiagonal) return this->m_fields[4];
 		// secondDiagonal varible must be TRUE.
-		return this->fields[4];
+		return this->m_fields[4];
 	}
 
 	// Check that the indicated field is free.
-	bool GameBoard::IsFieldFree(const int& nr) const
+	bool GameBoard::isFieldFree(const int& t_fieldNumber) const
 	{
-		if (nr<0 || nr>8) return false;
-		return fields[nr] == Player::NONE;
-	}
-
-	// Sets the value on the indicated field.
-	void GameBoard::SetField(const int& nr, const char& player)
-	{
-		if (nr<0 || nr>8) std::out_of_range("Field value is out of reange!");
-		if (player == 'X') fields[nr] = Player::CROSS;
-		else fields[nr] = Player::CIRCLE;
+		if (t_fieldNumber<0 || t_fieldNumber>8) return false;
+		return this->m_fields[t_fieldNumber] == Player::NONE;
 	}
 
 	// Check whether the indicated player won.
-	bool GameBoard::CheckIfPlayerWon(const Player& player) const
+	inline bool GameBoard::checkIfPlayerWon(const Player& t_player) const
 	{
-		return this->Winner() == player;
+		return this->winner() == t_player;
 	}
 
 	// Check if game board is full.
-	bool GameBoard::IsBoardFull() const
+	inline bool GameBoard::isBoardFull() const
 	{
-		return this->fields.end() == std::find(this->fields.begin(), this->fields.end(), Player::NONE);
+		return this->m_fields.end() == std::find(this->m_fields.begin(), this->m_fields.end(), Player::NONE);
 	}
 
 	// Return number of occupied fields in board game.
-	int GameBoard::NumberOfOccupiedFields() const
+	inline int GameBoard::numberOfOccupiedFields() const
 	{
-		return std::count_if(this->fields.begin(), this->fields.end(), [&](Player ply){ return ply != Player::NONE; });
+		return std::count_if(this->m_fields.begin(), this->m_fields.end(), [&](Player ply){ return ply != Player::NONE; });
+	}
+
+	// GameBoard subscript operator.
+	Player& GameBoard::operator[](std::size_t t_index)
+	{
+		if (t_index < 0 || t_index>8)
+		{
+			throw std::out_of_range("Field value is out of reange!");
+		}
+
+		return this->m_fields[t_index];
+	}
+
+	// GameBoard subscript operator.
+	const Player& GameBoard::operator[](std::size_t t_index) const
+	{
+		if (t_index < 0 || t_index>8)
+		{
+			throw std::out_of_range("Field value is out of reange!");
+		}
+
+		return this->m_fields[t_index];
+	}
+
+	// Returns size of game board.
+	inline std::size_t GameBoard::size() const
+	{
+		return this->m_fields.size();
 	}
 
 	// The GameNode class constructor.
@@ -105,7 +125,7 @@ namespace TicTacGame
 	// Add node to derived nodes list of a current node.
 	void GameNode::AddChildNode(GameBoard board, const int& field)
 	{
-		board.SetField(field, this->currentPlayer);
+		board[field] = this->currentPlayer;
 		auto nextPlayer = this->currentPlayer == Player::CROSS ? Player::CIRCLE : Player::CROSS;
 		this->derivedNodes.push_back(std::make_shared<GameNode>(shared_from_this(), nextPlayer, board, field));
 	}
@@ -118,7 +138,7 @@ namespace TicTacGame
 			std::lock_guard<std::mutex> lg(this->nodeMutex);
 			for (int i = 0; i < 9; i++)
 			{
-				if (this->gameState.IsFieldFree(i))
+				if (this->gameState.isFieldFree(i))
 				{
 					this->AddChildNode(this->gameState, i);
 				}
@@ -142,7 +162,7 @@ namespace TicTacGame
 	// Returns True if the node is a leaf.
 	bool GameNode::Leaf() const
 	{
-		return (this->gameState.Winner() != Player::NONE) || this->gameState.IsBoardFull();
+		return (this->gameState.winner() != Player::NONE) || this->gameState.isBoardFull();
 	}
 
 	// Recursive generating child nodes in game tree.
@@ -167,11 +187,11 @@ namespace TicTacGame
 	{
 		if (this->Leaf())
 		{
-			if (this->gameState.CheckIfPlayerWon(Player::CROSS))
+			if (this->gameState.checkIfPlayerWon(Player::CROSS))
 			{
 				return 10 - this->DistanceFromRoot();
 			}
-			else if (this->gameState.CheckIfPlayerWon(Player::CIRCLE))
+			else if (this->gameState.checkIfPlayerWon(Player::CIRCLE))
 			{
 				return this->DistanceFromRoot() - 10;
 			}
@@ -239,7 +259,7 @@ namespace TicTacGame
 	// Returns True if specified player won.
 	bool Game::CheckIfSpecifiedPlayerWon(const Player& ply) const
 	{
-		return this->board.CheckIfPlayerWon(ply);
+		return this->board.checkIfPlayerWon(ply);
 	}
 
 	// Returns number of existing nodes in game tree.
@@ -336,12 +356,12 @@ namespace TicTacGame
 	// Make move in game board and returns true if succeed.
 	void Game::MakeMove(const int& f)
 	{
-		if (!this->board.IsFieldFree(f))
+		if (!this->board.isFieldFree(f))
 		{
 			throw std::invalid_argument("The selected field is already occupied!");
 		}
 		
-		this->board.SetField(f, this->CurrentPlayer());
+		this->board[f] = this->CurrentPlayer();
 		if (this->AiIsPlaying() && (this->selectedAlgorithm == Algorithm::GAMETREE))
 		{
 			this->UpdateRootNode(f);
@@ -354,17 +374,17 @@ namespace TicTacGame
 	// Returns True if game is over.
 	bool Game::IsGameOver() const
 	{
-		return (this->board.Winner() != Player::NONE) || this->board.IsBoardFull();
+		return (this->board.winner() != Player::NONE) || this->board.isBoardFull();
 	}
 
 	// The score of game state.
 	int Game::MinMaxScore(const GameBoard& board, const int& depth) const
 	{
-		if (board.CheckIfPlayerWon(this->CurrentPlayer()))
+		if (board.checkIfPlayerWon(this->CurrentPlayer()))
 		{
 			return 10 - depth;
 		}
-		else if (board.CheckIfPlayerWon(this->CurrentPlayer() == Player::CROSS ? Player::CIRCLE : Player::CROSS))
+		else if (board.checkIfPlayerWon(this->CurrentPlayer() == Player::CROSS ? Player::CIRCLE : Player::CROSS))
 		{
 			return depth - 10;
 		}
@@ -377,7 +397,7 @@ namespace TicTacGame
 	// Returns the value of possible game state.
 	int Game::MinMax(GameBoard board, Player player, int depth) const
 	{
-		if ((board.Winner() != Player::NONE) || board.IsBoardFull())
+		if ((board.winner() != Player::NONE) || board.isBoardFull())
 		{
 			return this->MinMaxScore(board, depth);
 		}
@@ -386,12 +406,12 @@ namespace TicTacGame
 			depth++;
 			player = player == Player::CROSS ? Player::CIRCLE : Player::CROSS;
 			std::map<short, int> availableMovements;
-			for (size_t i = 0; i < board.fields.size(); i++)
+			for (size_t i = 0; i < board.size(); i++)
 			{
-				if (board.IsFieldFree(i))
+				if (board.isFieldFree(i))
 				{
 					GameBoard newBoard = board;
-					newBoard.SetField(i, player);
+					newBoard[i] = player;
 					availableMovements.emplace(std::make_pair(i, this->MinMax(newBoard, player, depth)));
 				}
 			}
@@ -417,12 +437,12 @@ namespace TicTacGame
 	int Game::MinMaxBestMove() const
 	{
 		std::map<short, int> availableMovements;
-		for (size_t i = 0; i < this->board.fields.size(); i++)
+		for (size_t i = 0; i < this->board.size(); i++)
 		{
-			if (this->board.IsFieldFree(i))
+			if (this->board.isFieldFree(i))
 			{
 				GameBoard newBoard = this->board;
-				newBoard.SetField(i, this->CurrentPlayer());
+				newBoard[i] = this->CurrentPlayer();
 				availableMovements.emplace(std::make_pair(i, this->MinMax(newBoard, this->CurrentPlayer(), 1)));
 			}
 		}
@@ -435,6 +455,6 @@ namespace TicTacGame
 	// Returns True if move is allowed
 	bool Game::MoveIsAllowed(const int& move) const
 	{
-		return this->board.IsFieldFree(move);
+		return this->board.isFieldFree(move);
 	}
 }

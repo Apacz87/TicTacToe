@@ -29,34 +29,37 @@ namespace TicTacGame
 	class GameBoard
 	{
 	private:
-		// Friend declaration
-		friend class GameNode;
-		friend class Game;
-
 		// Game board fields
-		std::array<Player, 9> fields;
-
-		// Return number of occupied fields in board game.
-		int NumberOfOccupiedFields() const;
-
-		// Checking if game is over, returns the winner.
-		Player Winner() const;
-
-		// Sets the value on the indicated field.
-		void SetField(const int&, const char&);
-
-		// Return true if the indicated field is free.
-		bool IsFieldFree(const int&) const;
-
-		// Return true if the indicated player won.
-		bool CheckIfPlayerWon(const Player&) const;
-
-		// Return true if game board is full.
-		bool IsBoardFull() const;
+		std::array<Player, 9> m_fields;
 
 	public:
 		// The GameBoard class constructor.
 		GameBoard();
+
+		// Return true if the indicated player won.
+		inline bool checkIfPlayerWon(const Player&) const;
+
+		// Return true if game board is full.
+		inline bool isBoardFull() const;
+
+		// Return number of occupied fields in board game.
+		inline int numberOfOccupiedFields() const;
+
+		// Returns size of game board.
+		inline std::size_t size() const;
+
+		// Return true if the indicated field is free.
+		bool isFieldFree(const int&) const;
+
+		// Checking if game is over, returns the winner.
+		Player winner() const;
+
+		// GameBoard subscript operator.
+		Player& operator[](std::size_t idx);
+
+		// GameBoard subscript operator.
+		const Player& operator[](std::size_t idx) const;
+
 	};
 
 	// The GameNode Class.
