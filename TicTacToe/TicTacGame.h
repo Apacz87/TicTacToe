@@ -70,34 +70,34 @@ namespace TicTacGame
 		friend class Game;
 
 		// The number of existing nodes.
-		static int numberOfNodes;
+		static int m_numberOfNodes;
 
 		// The last move value.
-		short lastMove;
+		short m_lastMove;
 
 		// The Game board current state.
-		GameBoard gameState;
+		GameBoard m_gameState;
 
 		// The parent node.
-		std::weak_ptr<GameNode> parentNode;
+		std::weak_ptr<GameNode> m_parentNode;
 
 		// The derived nodes.
-		std::vector<std::shared_ptr<GameNode>> derivedNodes;
+		std::vector<std::shared_ptr<GameNode>> m_derivedNodes;
 
 		// The node mutex.
-		std::mutex nodeMutex;
+		std::mutex m_nodeMutex;
 
 		// The current player.
-		Player currentPlayer;
+		Player m_currentPlayer;
 
 		// Add node to derived nodes list of a current node.
-		void AddChildNode(GameBoard, const int&);
+		void addChildNode(GameBoard, const int&);
 
 		// Recursive generating child nodes in game tree.
-		void RecursiveTreeWalk(std::shared_ptr<GameNode>);
+		void recursiveTreeWalk(std::shared_ptr<GameNode>);
 
 		// Returns distance from root for current node.
-		int DistanceFromRoot() const;
+		inline int distanceFromRoot() const;
 
 
 	public:
@@ -110,23 +110,23 @@ namespace TicTacGame
 		// The GameNode class destructor.
 		~GameNode();
 
-		// Delete all derived nodes of a current node.
-		void DeleteChildNodes();
-
-		// Generate child nodes for current node.
-		void GenerateChildNodes();
-
 		// Returns True if the node is a leaf.
-		bool Leaf() const;
+		inline bool leaf() const;
 
 		// Return number of existing nodes.
-		int TotalNumberOfNodes() const;
-
-		// Return value of game tree node.
-		int NodeVale() const;
+		inline int totalNumberOfNodes() const;
 
 		// Return value of base move for current node.
-		short BaseMove() const;
+		inline short baseMove() const;
+
+		// Return value of game tree node.
+		int nodeVale() const;
+
+		// Delete all derived nodes of a current node.
+		void deleteChildNodes();
+
+		// Generate child nodes for current node.
+		void generateChildNodes();
 
 	};
 

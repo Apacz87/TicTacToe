@@ -5,7 +5,7 @@
 namespace TicTacGame
 {
 	// Number of existing game tree nodes.
-	int GameNode::numberOfNodes = 0;
+	int GameNode::m_numberOfNodes = 0;
 
 	// The GameBoard class constructor.
 	GameBoard::GameBoard()
@@ -102,131 +102,132 @@ namespace TicTacGame
 	}
 
 	// The GameNode class constructor.
-	GameNode::GameNode(Player ply = Player::CROSS) : gameState(), lastMove(-1), currentPlayer(ply)
+	GameNode::GameNode(Player t_player = Player::CROSS) : m_gameState(), m_lastMove(-1), m_currentPlayer(t_player)
 	{
-		this->numberOfNodes++;
+		this->m_numberOfNodes++;
 	}
 
 	// The GameNode class constructor.
-	GameNode::GameNode(std::shared_ptr<GameNode> base, Player ply, GameBoard board, short move) :
-		gameState(board), lastMove(move), parentNode(base), currentPlayer(ply)
+	GameNode::GameNode(std::shared_ptr<GameNode> t_base, Player t_player, GameBoard t_board, short t_move) :
+		m_gameState(t_board), m_lastMove(t_move), m_parentNode(t_base), m_currentPlayer(t_player)
 	{
-		this->numberOfNodes++;
+		this->m_numberOfNodes++;
 	}
 
 	// The GameNode class destructor.
 	GameNode::~GameNode()
 	{
 		//std::lock_guard<std::mutex> lg(this->nodeMutex);
-		this->DeleteChildNodes();
-		this->numberOfNodes--;
+		this->deleteChildNodes();
+		this->m_numberOfNodes--;
 	}
 
 	// Add node to derived nodes list of a current node.
-	void GameNode::AddChildNode(GameBoard board, const int& field)
+	void GameNode::addChildNode(GameBoard t_board, const int& t_field)
 	{
-		board[field] = this->currentPlayer;
-		auto nextPlayer = this->currentPlayer == Player::CROSS ? Player::CIRCLE : Player::CROSS;
-		this->derivedNodes.push_back(std::make_shared<GameNode>(shared_from_this(), nextPlayer, board, field));
+		t_board[t_field] = this->m_currentPlayer;
+		auto nextPlayer = this->m_currentPlayer == Player::CROSS ? Player::CIRCLE : Player::CROSS;
+		this->m_derivedNodes.emplace_back(std::make_shared<GameNode>(shared_from_this(), nextPlayer, t_board, t_field));
 	}
 
 	// Generate child nodes for current node.
-	void GameNode::GenerateChildNodes()
+	void GameNode::generateChildNodes()
 	{
-		if (!this->Leaf())
+		if (!this->leaf())
 		{
-			std::lock_guard<std::mutex> lg(this->nodeMutex);
+			std::lock_guard<std::mutex> lg(this->m_nodeMutex);
+			this->m_derivedNodes.reserve(this->m_gameState.size() - this->m_gameState.numberOfOccupiedFields());
 			for (int i = 0; i < 9; i++)
 			{
-				if (this->gameState.isFieldFree(i))
+				if (this->m_gameState.isFieldFree(i))
 				{
-					this->AddChildNode(this->gameState, i);
+					this->addChildNode(this->m_gameState, i);
 				}
 			}
 		}
 	}
 
 	// Delete all derived nodes of a current node.
-	void GameNode::DeleteChildNodes()
+	void GameNode::deleteChildNodes()
 	{
-		std::lock_guard<std::mutex> lg(this->nodeMutex);
-		this->derivedNodes.clear();
+		std::lock_guard<std::mutex> lg(this->m_nodeMutex);
+		this->m_derivedNodes.clear();
 	}
 
 	// Return number of existing nodes.
-	int GameNode::TotalNumberOfNodes() const
+	inline int GameNode::totalNumberOfNodes() const
 	{
-		return this->numberOfNodes;
+		return this->m_numberOfNodes;
 	}
 
 	// Returns True if the node is a leaf.
-	bool GameNode::Leaf() const
+	inline bool GameNode::leaf() const
 	{
-		return (this->gameState.winner() != Player::NONE) || this->gameState.isBoardFull();
+		return (this->m_gameState.winner() != Player::NONE) || this->m_gameState.isBoardFull();
 	}
 
 	// Recursive generating child nodes in game tree.
-	void GameNode::RecursiveTreeWalk(std::shared_ptr<GameNode> partialTree)
+	void GameNode::recursiveTreeWalk(std::shared_ptr<GameNode> t_partialTree)
 	{
-		if (!partialTree->Leaf())
+		if (!t_partialTree->leaf())
 		{
-			if (partialTree->derivedNodes.empty())
+			if (t_partialTree->m_derivedNodes.empty())
 			{
-				partialTree->GenerateChildNodes();
+				t_partialTree->generateChildNodes();
 			}
 
-			for each (auto node in partialTree->derivedNodes)
+			for each (auto node in t_partialTree->m_derivedNodes)
 			{
-				node->RecursiveTreeWalk(node);
+				node->recursiveTreeWalk(node);
 			}
 		}
 	}
 
 	// Return value of game tree node.
-	int GameNode::NodeVale() const
+	int GameNode::nodeVale() const
 	{
-		if (this->Leaf())
+		if (this->leaf())
 		{
-			if (this->gameState.checkIfPlayerWon(Player::CROSS))
+			if (this->m_gameState.checkIfPlayerWon(Player::CROSS))
 			{
-				return 10 - this->DistanceFromRoot();
+				return 10 - this->distanceFromRoot();
 			}
-			else if (this->gameState.checkIfPlayerWon(Player::CIRCLE))
+			else if (this->m_gameState.checkIfPlayerWon(Player::CIRCLE))
 			{
-				return this->DistanceFromRoot() - 10;
+				return this->distanceFromRoot() - 10;
 			}
 
 			return 0;
 		}
-		else if (this->derivedNodes.empty())
+		else if (this->m_derivedNodes.empty())
 		{
 			return 0;
 		}
 
-		if (this->currentPlayer == Player::CROSS)
+		if (this->m_currentPlayer == Player::CROSS)
 		{
-			return (*std::max_element(this->derivedNodes.begin(), this->derivedNodes.end(),
+			return (*std::max_element(this->m_derivedNodes.begin(), this->m_derivedNodes.end(),
 				[](const std::shared_ptr<GameNode> p1, const std::shared_ptr<GameNode> p2) {
-				return p1->NodeVale() < p2->NodeVale(); }))->NodeVale();
+				return p1->nodeVale() < p2->nodeVale(); }))->nodeVale();
 		}
 
-		return (*std::min_element(this->derivedNodes.begin(), this->derivedNodes.end(),
+		return (*std::min_element(this->m_derivedNodes.begin(), this->m_derivedNodes.end(),
 			[](const std::shared_ptr<GameNode> p1, const std::shared_ptr<GameNode> p2) {
-			return p1->NodeVale() < p2->NodeVale(); }))->NodeVale();
+			return p1->nodeVale() < p2->nodeVale(); }))->nodeVale();
 	}
 
 	// Returns value of base move.
-	short GameNode::BaseMove() const
+	inline short GameNode::baseMove() const
 	{
-		return this->lastMove;
+		return this->m_lastMove;
 	}
 
 	// Returns distance from root node.
-	int GameNode::DistanceFromRoot() const
+	inline int GameNode::distanceFromRoot() const
 	{
-		if (!this->parentNode.expired())
+		if (!this->m_parentNode.expired())
 		{
-			return 1 + this->parentNode.lock()->DistanceFromRoot();
+			return 1 + this->m_parentNode.lock()->distanceFromRoot();
 		}
 
 		return 0;
@@ -246,7 +247,7 @@ namespace TicTacGame
 	{
 		if (this->rootNode != nullptr)
 		{
-			this->rootNode->DeleteChildNodes();
+			this->rootNode->deleteChildNodes();
 		}
 	}
 
@@ -265,7 +266,7 @@ namespace TicTacGame
 	// Returns number of existing nodes in game tree.
 	int Game::NumberOfExistingNodes() const
 	{
-		return rootNode->TotalNumberOfNodes();
+		return rootNode->totalNumberOfNodes();
 	}
 
 	// Switch current player.
@@ -281,7 +282,7 @@ namespace TicTacGame
 	std::shared_ptr<GameNode> Game::generateTree()
 	{
 		auto newGameTreeRoot = std::make_shared<GameNode>(Player::CROSS);
-		newGameTreeRoot->RecursiveTreeWalk(newGameTreeRoot);
+		newGameTreeRoot->recursiveTreeWalk(newGameTreeRoot);
 		return newGameTreeRoot;
 	}
 
@@ -289,9 +290,9 @@ namespace TicTacGame
 	void Game::UpdateAvailableMovements()
 	{
 		this->availableMovements.clear();
-		for each (auto node in this->rootNode->derivedNodes)
+		for each (auto node in this->rootNode->m_derivedNodes)
 		{
-			this->availableMovements.emplace(std::make_pair(node->BaseMove(), node->NodeVale()));
+			this->availableMovements.emplace(std::make_pair(node->baseMove(), node->nodeVale()));
 		}
 	}
 
@@ -303,7 +304,7 @@ namespace TicTacGame
 			this->rootNode = this->threadGeneratingGameTree.get();
 		}
 
-		auto selectedNode = std::find_if(this->rootNode->derivedNodes.begin(), this->rootNode->derivedNodes.end(), [move](std::shared_ptr<GameNode> node){ return node->BaseMove() == move; });
+		auto selectedNode = std::find_if(this->rootNode->m_derivedNodes.begin(), this->rootNode->m_derivedNodes.end(), [move](std::shared_ptr<GameNode> node){ return node->baseMove() == move; });
 		this->rootNode = selectedNode->get()->shared_from_this();
 		this->UpdateAvailableMovements();
 	}
@@ -311,15 +312,15 @@ namespace TicTacGame
 	// Delete the old Nodes.
 	void Game::DeleteOldNodes(std::shared_ptr<GameNode> oldRoot)
 	{
-		oldRoot->DeleteChildNodes();
+		oldRoot->deleteChildNodes();
 	}
 
 	// Delete unreachable game tree nodes.
 	void Game::CleanUpTree()
 	{
-		if (!this->rootNode->parentNode.expired())
+		if (!this->rootNode->m_parentNode.expired())
 		{
-			auto oldRootNode = this->rootNode->parentNode.lock();
+			auto oldRootNode = this->rootNode->m_parentNode.lock();
 			std::thread cleanUpThread(&Game::DeleteOldNodes, this, oldRootNode);
 			cleanUpThread.detach();
 		}
