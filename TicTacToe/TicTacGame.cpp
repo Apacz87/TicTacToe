@@ -234,48 +234,48 @@ namespace TicTacGame
 	}
 
 	// The Game class constructor.
-	Game::Game(const GameSettings& settings) : availableMovements(), playWithAI(settings.AI), selectedAlgorithm(settings.Implementation), player(Player::CROSS)
+	Game::Game(const GameSettings& settings) : m_availableMovements(), m_playWithAI(settings.AI), m_selectedAlgorithm(settings.Implementation), m_player(Player::CROSS)
 	{
-		if (this->playWithAI && (this->selectedAlgorithm == Algorithm::GAMETREE))
+		if (this->m_playWithAI && (this->m_selectedAlgorithm == Algorithm::GAMETREE))
 		{
-			this->threadGeneratingGameTree = std::async(&Game::generateTree, this);
+			this->m_threadGeneratingGameTree = std::async(&Game::generateTree, this);
 		}
 	}
 
 	// The Game class destructor.
 	Game::~Game()
 	{
-		if (this->rootNode != nullptr)
+		if (this->m_rootNode != nullptr)
 		{
-			this->rootNode->deleteChildNodes();
+			this->m_rootNode->deleteChildNodes();
 		}
 	}
 
 	// Returns True if AI is Playing.
-	bool Game::AiIsPlaying() const
+	inline bool Game::isAiPlaying() const
 	{
-		return this->playWithAI;
+		return this->m_playWithAI;
 	}
 
 	// Returns True if specified player won.
-	bool Game::CheckIfSpecifiedPlayerWon(const Player& ply) const
+	bool Game::checkIfSpecifiedPlayerWon(const Player& ply) const
 	{
-		return this->board.checkIfPlayerWon(ply);
+		return this->m_board.checkIfPlayerWon(ply);
 	}
 
 	// Returns number of existing nodes in game tree.
-	int Game::NumberOfExistingNodes() const
+	int Game::numberOfExistingNodes() const
 	{
-		return rootNode->totalNumberOfNodes();
+		return this->m_rootNode->totalNumberOfNodes();
 	}
 
 	// Switch current player.
-	void Game::SwitchPlayer(){ this->player = player == Player::CROSS ? Player::CIRCLE : Player::CROSS; }
+	inline void Game::switchPlayer(){ this->m_player = (this->m_player == Player::CROSS ? Player::CIRCLE : Player::CROSS); }
 
 	// Returns current Player.
-	Player Game::CurrentPlayer() const
+	inline Player Game::currentPlayer() const
 	{
-		return this->player;
+		return this->m_player;
 	}
 
 	// Generate game tree.
@@ -287,105 +287,105 @@ namespace TicTacGame
 	}
 
 	// Update available movements list.
-	void Game::UpdateAvailableMovements()
+	void Game::updateAvailableMovements()
 	{
-		this->availableMovements.clear();
-		for each (auto node in this->rootNode->m_derivedNodes)
+		this->m_availableMovements.clear();
+		for each (auto node in this->m_rootNode->m_derivedNodes)
 		{
-			this->availableMovements.emplace(std::make_pair(node->baseMove(), node->nodeVale()));
+			this->m_availableMovements.emplace(std::make_pair(node->baseMove(), node->nodeVale()));
 		}
 	}
 
 	// Update the root node in tree.
-	void Game::UpdateRootNode(const short& move)
+	void Game::updateRootNode(const short& move)
 	{
-		if (this->rootNode == nullptr)
+		if (this->m_rootNode == nullptr)
 		{
-			this->rootNode = this->threadGeneratingGameTree.get();
+			this->m_rootNode = this->m_threadGeneratingGameTree.get();
 		}
 
-		auto selectedNode = std::find_if(this->rootNode->m_derivedNodes.begin(), this->rootNode->m_derivedNodes.end(), [move](std::shared_ptr<GameNode> node){ return node->baseMove() == move; });
-		this->rootNode = selectedNode->get()->shared_from_this();
-		this->UpdateAvailableMovements();
+		auto selectedNode = std::find_if(this->m_rootNode->m_derivedNodes.begin(), this->m_rootNode->m_derivedNodes.end(), [move](std::shared_ptr<GameNode> node){ return node->baseMove() == move; });
+		this->m_rootNode = selectedNode->get()->shared_from_this();
+		this->updateAvailableMovements();
 	}
 
 	// Delete the old Nodes.
-	void Game::DeleteOldNodes(std::shared_ptr<GameNode> oldRoot)
+	inline void Game::deleteOldNodes(std::shared_ptr<GameNode> oldRoot)
 	{
 		oldRoot->deleteChildNodes();
 	}
 
 	// Delete unreachable game tree nodes.
-	void Game::CleanUpTree()
+	void Game::cleanUpTree()
 	{
-		if (!this->rootNode->m_parentNode.expired())
+		if (!this->m_rootNode->m_parentNode.expired())
 		{
-			auto oldRootNode = this->rootNode->m_parentNode.lock();
-			std::thread cleanUpThread(&Game::DeleteOldNodes, this, oldRootNode);
+			auto oldRootNode = this->m_rootNode->m_parentNode.lock();
+			std::thread cleanUpThread(&Game::deleteOldNodes, this, oldRootNode);
 			cleanUpThread.detach();
 		}
 	}
 
 	// Returns the number of the best available move for the indicated player.
-	int Game::BestAvailableMove(const Player& player) const
+	int Game::bestAvailableMove(const Player& player) const
 	{
-		if (this->selectedAlgorithm == Algorithm::GAMETREE)
+		if (this->m_selectedAlgorithm == Algorithm::GAMETREE)
 		{
 			if (player == Player::CROSS)
 			{
-				return std::max_element(this->availableMovements.begin(), this->availableMovements.end(),
+				return std::max_element(this->m_availableMovements.begin(), this->m_availableMovements.end(),
 					[](const std::pair<int, int>& p1, const std::pair<int, int>& p2) {
 					return p1.second < p2.second; })->first;
 			}
 
-			return std::min_element(this->availableMovements.begin(), this->availableMovements.end(),
+			return std::min_element(this->m_availableMovements.begin(), this->m_availableMovements.end(),
 				[](const std::pair<int, int>& p1, const std::pair<int, int>& p2) {
 				return p1.second < p2.second; })->first;
 		}
 		else
 		{
-			return this->MinMaxBestMove();
+			return this->minMaxBestMove();
 		}
 	}
 
 	// Returns the number of the best available move for the current player.
-	int Game::BestAvailableMove()
+	int Game::bestAvailableMove()
 	{
-		return this->BestAvailableMove(this->CurrentPlayer());
+		return this->bestAvailableMove(this->currentPlayer());
 	}
 
 	// Make move in game board and returns true if succeed.
-	void Game::MakeMove(const int& f)
+	void Game::makeMove(const int& f)
 	{
-		if (!this->board.isFieldFree(f))
+		if (!this->m_board.isFieldFree(f))
 		{
 			throw std::invalid_argument("The selected field is already occupied!");
 		}
 		
-		this->board[f] = this->CurrentPlayer();
-		if (this->AiIsPlaying() && (this->selectedAlgorithm == Algorithm::GAMETREE))
+		this->m_board[f] = this->currentPlayer();
+		if (this->isAiPlaying() && (this->m_selectedAlgorithm == Algorithm::GAMETREE))
 		{
-			this->UpdateRootNode(f);
-			this->CleanUpTree();
+			this->updateRootNode(f);
+			this->cleanUpTree();
 		}
 
-		this->SwitchPlayer();
+		this->switchPlayer();
 	}
 
 	// Returns True if game is over.
-	bool Game::IsGameOver() const
+	bool Game::isGameOver() const
 	{
-		return (this->board.winner() != Player::NONE) || this->board.isBoardFull();
+		return (this->m_board.winner() != Player::NONE) || this->m_board.isBoardFull();
 	}
 
 	// The score of game state.
-	int Game::MinMaxScore(const GameBoard& board, const int& depth) const
+	inline int Game::minMaxScore(const GameBoard& board, const int& depth) const
 	{
-		if (board.checkIfPlayerWon(this->CurrentPlayer()))
+		if (board.checkIfPlayerWon(this->currentPlayer()))
 		{
 			return 10 - depth;
 		}
-		else if (board.checkIfPlayerWon(this->CurrentPlayer() == Player::CROSS ? Player::CIRCLE : Player::CROSS))
+		else if (board.checkIfPlayerWon(this->currentPlayer() == Player::CROSS ? Player::CIRCLE : Player::CROSS))
 		{
 			return depth - 10;
 		}
@@ -396,11 +396,11 @@ namespace TicTacGame
 	}
 
 	// Returns the value of possible game state.
-	int Game::MinMax(GameBoard board, Player player, int depth) const
+	int Game::minMax(GameBoard board, Player player, int depth) const
 	{
 		if ((board.winner() != Player::NONE) || board.isBoardFull())
 		{
-			return this->MinMaxScore(board, depth);
+			return this->minMaxScore(board, depth);
 		}
 		else
 		{
@@ -413,11 +413,11 @@ namespace TicTacGame
 				{
 					GameBoard newBoard = board;
 					newBoard[i] = player;
-					availableMovements.emplace(std::make_pair(i, this->MinMax(newBoard, player, depth)));
+					availableMovements.emplace(std::make_pair(i, this->minMax(newBoard, player, depth)));
 				}
 			}
 
-			if (this->CurrentPlayer() == player)
+			if (this->currentPlayer() == player)
 			{
 				auto maxMove = std::max_element(availableMovements.begin(), availableMovements.end(),
 					[](const std::pair<int, int>& p1, const std::pair<int, int>& p2) {
@@ -435,16 +435,16 @@ namespace TicTacGame
 	}
 
 	// Returns the number of the best available move for the current player.
-	int Game::MinMaxBestMove() const
+	int Game::minMaxBestMove() const
 	{
 		std::map<short, int> availableMovements;
-		for (size_t i = 0; i < this->board.size(); i++)
+		for (size_t i = 0; i < this->m_board.size(); i++)
 		{
-			if (this->board.isFieldFree(i))
+			if (this->m_board.isFieldFree(i))
 			{
-				GameBoard newBoard = this->board;
-				newBoard[i] = this->CurrentPlayer();
-				availableMovements.emplace(std::make_pair(i, this->MinMax(newBoard, this->CurrentPlayer(), 1)));
+				GameBoard newBoard = this->m_board;
+				newBoard[i] = this->currentPlayer();
+				availableMovements.emplace(std::make_pair(i, this->minMax(newBoard, this->currentPlayer(), 1)));
 			}
 		}
 
@@ -454,8 +454,8 @@ namespace TicTacGame
 	}
 
 	// Returns True if move is allowed
-	bool Game::MoveIsAllowed(const int& move) const
+	bool Game::isMoveAllowed(const int& move) const
 	{
-		return this->board.isFieldFree(move);
+		return this->m_board.isFieldFree(move);
 	}
 }

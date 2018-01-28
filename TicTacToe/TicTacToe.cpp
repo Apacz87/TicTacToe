@@ -38,11 +38,11 @@ BOOL    CALLBACK    NewGameDlgProc(HWND, UINT, WPARAM, LPARAM);
 // Game Over message.
 void EndGame()
 {
-	if (ticTacGame->CheckIfSpecifiedPlayerWon(TicTacGame::Player::CROSS))
+	if (ticTacGame->checkIfSpecifiedPlayerWon(TicTacGame::Player::CROSS))
 	{
 		MessageBox(NULL, L"Player X won!", L"Win!", MB_ICONINFORMATION);
 	}
-	else if (ticTacGame->CheckIfSpecifiedPlayerWon(TicTacGame::Player::CIRCLE))
+	else if (ticTacGame->checkIfSpecifiedPlayerWon(TicTacGame::Player::CIRCLE))
 	{
 		MessageBox(NULL, L"Player O won!", L"Win!", MB_ICONINFORMATION);
 	}
@@ -57,7 +57,7 @@ void NodeLabelRefresh(HWND hwnd)
 {
 	while (true)
 	{
-		SetWindowText(GetDlgItem(hwnd, IDC_NLABEL), std::to_wstring(ticTacGame->NumberOfExistingNodes()).c_str());
+		SetWindowText(GetDlgItem(hwnd, IDC_NLABEL), std::to_wstring(ticTacGame->numberOfExistingNodes()).c_str());
 		std::this_thread::sleep_for(std::chrono::milliseconds(200));
 	}
 }
@@ -169,10 +169,10 @@ HWND InitializationOfMainWindow(HINSTANCE hInstance)
 	NumberOfNodesLabel = CreateWindow(L"STATIC", NULL, WS_CHILD | WS_VISIBLE | SS_LEFT, 151, MAIN_WINDOW_HEIGH - 85, 47, 18, hWnd, (HMENU)IDC_NLABEL, hInstance, NULL);
 
 	SetWindowText(PlayerLabel, L"Player:");
-	auto playerSymbol = ticTacGame->CurrentPlayer();
+	auto playerSymbol = ticTacGame->currentPlayer();
 	SetWindowText(CurentPlayerLabel, (LPCWSTR)&playerSymbol);
 	SetWindowText(NodesLabel, L"Nodes:");
-	SetWindowText(NumberOfNodesLabel, std::to_wstring(ticTacGame->NumberOfExistingNodes()).c_str());
+	SetWindowText(NumberOfNodesLabel, std::to_wstring(ticTacGame->numberOfExistingNodes()).c_str());
 	hCrossIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CROSSICO));
 	hCircleIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CIRCLEICO));
 
@@ -207,27 +207,27 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		wmEvent = HIWORD(wParam);
 		if (wmId == IDB_ONE || wmId == IDB_TWO || wmId == IDB_THREE || wmId == IDB_FOUR || wmId == IDB_FIVE || wmId == IDB_SIX || wmId == IDB_SEVEN || wmId == IDB_EIGHT || wmId == IDB_NINE)
 		{
-			if (!ticTacGame->MoveIsAllowed(((wmId % 10) - 1)))
+			if (!ticTacGame->isMoveAllowed(((wmId % 10) - 1)))
 			{
 				MessageBox(NULL, L"You're cheating!", L"Error!", MB_ICONEXCLAMATION);
 				break;
 			}
 
-			SendMessage(GetDlgItem(hWnd, wmId), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)(ticTacGame->CurrentPlayer() == TicTacGame::Player::CROSS ? hCrossIcon : hCircleIcon));
-			ticTacGame->MakeMove(((wmId % 10) - 1));
-			if (ticTacGame->IsGameOver())
+			SendMessage(GetDlgItem(hWnd, wmId), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)(ticTacGame->currentPlayer() == TicTacGame::Player::CROSS ? hCrossIcon : hCircleIcon));
+			ticTacGame->makeMove(((wmId % 10) - 1));
+			if (ticTacGame->isGameOver())
 			{
 				EndGame();
 				DestroyWindow(hWnd);
 				break;
 			}
 
-			if (ticTacGame->AiIsPlaying())
+			if (ticTacGame->isAiPlaying())
 			{
-				auto x = ticTacGame->BestAvailableMove();
-				SendMessage(GetDlgItem(hWnd, x + 301), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)(ticTacGame->CurrentPlayer() == TicTacGame::Player::CROSS ? hCrossIcon : hCircleIcon));
-				ticTacGame->MakeMove(x);
-				if (ticTacGame->IsGameOver())
+				auto x = ticTacGame->bestAvailableMove();
+				SendMessage(GetDlgItem(hWnd, x + 301), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)(ticTacGame->currentPlayer() == TicTacGame::Player::CROSS ? hCrossIcon : hCircleIcon));
+				ticTacGame->makeMove(x);
+				if (ticTacGame->isGameOver())
 				{
 					EndGame();
 					DestroyWindow(hWnd);
@@ -235,9 +235,9 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 				}
 			}
 
-			auto cp = ticTacGame->CurrentPlayer();
+			auto cp = ticTacGame->currentPlayer();
 			SetWindowText(GetDlgItem(hWnd, IDC_PLABEL), (LPCWSTR)&cp);
-			SetWindowText(GetDlgItem(hWnd, IDC_NLABEL), std::to_wstring(ticTacGame->NumberOfExistingNodes()).c_str());
+			SetWindowText(GetDlgItem(hWnd, IDC_NLABEL), std::to_wstring(ticTacGame->numberOfExistingNodes()).c_str());
 			break;
 		}
 
@@ -256,7 +256,7 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 							SendMessage(GetDlgItem(hWnd, fieldNumber + 301), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)NULL);
 						}
 
-						auto cp = ticTacGame->CurrentPlayer();
+						auto cp = ticTacGame->currentPlayer();
 						SetWindowText(GetDlgItem(hWnd, IDC_PLABEL), (LPCWSTR)&cp);
 
 					}

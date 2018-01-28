@@ -99,7 +99,6 @@ namespace TicTacGame
 		// Returns distance from root for current node.
 		inline int distanceFromRoot() const;
 
-
 	public:
 		// The GameNode class constructor.
 		GameNode(Player);
@@ -135,49 +134,49 @@ namespace TicTacGame
 	{
 	private:
 		// The algorithm implementation selected by user.
-		Algorithm selectedAlgorithm;
-
-		// The current player.
-		Player player;
+		const Algorithm m_selectedAlgorithm;
 
 		// Determines whether if AI is playing.
-		bool playWithAI;
+		const bool m_playWithAI;
+
+		// The current player.
+		Player m_player;
 
 		// The game board.
-		GameBoard board;
+		GameBoard m_board;
 
 		// Thread generating the game tree.
-		std::future<std::shared_ptr<GameNode>> threadGeneratingGameTree;
+		std::future<std::shared_ptr<GameNode>> m_threadGeneratingGameTree;
 
 		// The available movements in current game state.
-		std::map<short, int> availableMovements;
+		std::map<short, int> m_availableMovements;
 
 		// The game tree root node.
-		std::shared_ptr<GameNode> rootNode;
+		std::shared_ptr<GameNode> m_rootNode;
 
 		// Delete the old Nodes.
-		void DeleteOldNodes(std::shared_ptr<GameNode>);
+		inline void deleteOldNodes(std::shared_ptr<GameNode>);
+
+		// The score of game state.
+		inline int minMaxScore(const GameBoard&, const int&) const;
 
 		// Update available movements container.
-		void UpdateAvailableMovements();
+		void updateAvailableMovements();
 
 		// Update the root node in tree.
-		void UpdateRootNode(const short&);
+		void updateRootNode(const short&);
 
 		// Delete unreachable game tree nodes.
-		void CleanUpTree();
+		void cleanUpTree();
 
 		// Generates new game tree.
 		std::shared_ptr<GameNode> generateTree();
 
-		// The score of game state.
-		int MinMaxScore(const GameBoard&, const int&) const;
-
 		// Returns the value of possible game state.
-		int MinMax(GameBoard, Player, int) const;
+		int minMax(GameBoard, Player, int) const;
 
 		// Returns the number of the best available move for the current player.
-		int MinMaxBestMove() const;
+		int minMaxBestMove() const;
 
 	public:
 		// The Game class constructor.
@@ -186,35 +185,35 @@ namespace TicTacGame
 		// The Game class destructor.
 		~Game();
 
-		// Make move in game board.
-		void MakeMove(const int&);
-
-		// Returns True if move is allowed
-		bool MoveIsAllowed(const int&) const;
-
-		// Returns True if game is over.
-		bool IsGameOver() const;
+		// Returns current Player.
+		inline Player currentPlayer() const;
 
 		// Returns True if AI is Playing.
-		bool AiIsPlaying() const;
-
-		// Returns True if specified player won.
-		bool CheckIfSpecifiedPlayerWon(const Player&) const;
-
-		// Returns current Player.
-		Player CurrentPlayer() const;
-
-		// Returns number of existing nodes in game tree.
-		int NumberOfExistingNodes() const;
+		inline bool isAiPlaying() const;
 
 		// Switch current player.
-		void SwitchPlayer();
+		inline void switchPlayer();
+
+		// Make move in game board.
+		void makeMove(const int&);
+
+		// Returns True if move is allowed
+		bool isMoveAllowed(const int&) const;
+
+		// Returns True if game is over.
+		bool isGameOver() const;
+
+		// Returns True if specified player won.
+		bool checkIfSpecifiedPlayerWon(const Player&) const;
+
+		// Returns number of existing nodes in game tree.
+		int numberOfExistingNodes() const;
 
 		// Returns the number of the best available move for the current player.
-		int BestAvailableMove();
+		int bestAvailableMove();
 
 		// Returns the number of the best available move for the indicated player.
-		int BestAvailableMove(const Player&) const;
+		int bestAvailableMove(const Player&) const;
 
 	};
 }
