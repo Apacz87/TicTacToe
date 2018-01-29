@@ -34,9 +34,11 @@ HWND                InitializationOfMainWindow(HINSTANCE);
 LRESULT CALLBACK	MainWindowProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 BOOL    CALLBACK    NewGameDlgProc(HWND, UINT, WPARAM, LPARAM);
+bool                GameEnd(HWND&, std::shared_ptr<TicTacGame::Game>&);
+bool                GameReinitialization(HWND&, std::shared_ptr<TicTacGame::Game>&);
 
 // Game Over message.
-void EndGame()
+bool EndGame(HWND& hWnd, std::shared_ptr<TicTacGame::Game>& game)
 {
 	if (ticTacGame->checkIfSpecifiedPlayerWon(TicTacGame::Player::CROSS))
 	{
@@ -50,6 +52,36 @@ void EndGame()
 	{
 		MessageBox(NULL, L"Nobody won!", L"Draw!", MB_ICONINFORMATION);
 	}
+
+	int ret = DialogBox(hInst, MAKEINTRESOURCE(IDD_PLAY_AGAIN), hWnd, NewGameDlgProc);
+	if (ret == IDOK)
+	{
+		return !GameReinitialization(hWnd, game);
+	}
+	
+	return true;
+}
+
+// Initialization of a new game.
+bool GameReinitialization(HWND& hWnd, std::shared_ptr<TicTacGame::Game>& game)
+{
+	int ret = DialogBox(hInst, MAKEINTRESOURCE(IDD_NEWGAME_DIALOG), hWnd, NewGameDlgProc);
+	if (ret == IDOK)
+	{
+		game = std::make_shared<TicTacGame::Game>(CurrentGameSettings);
+		//Resetting game board in GUI.
+		for (size_t fieldNumber = 0; fieldNumber <= 9; fieldNumber++)
+		{
+			SendMessage(GetDlgItem(hWnd, fieldNumber + 301), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)NULL);
+		}
+
+		auto cp = game->currentPlayer();
+		SetWindowText(GetDlgItem(hWnd, IDC_PLABEL), (LPCWSTR)&cp);
+		return true;
+
+	}
+	
+	return false;
 }
 
 // Function refreshing Node label.
@@ -217,8 +249,11 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 			ticTacGame->makeMove(((wmId % 10) - 1));
 			if (ticTacGame->isGameOver())
 			{
-				EndGame();
-				DestroyWindow(hWnd);
+				if (EndGame(hWnd, ticTacGame))
+				{
+					DestroyWindow(hWnd);
+				}
+
 				break;
 			}
 
@@ -229,8 +264,11 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 				ticTacGame->makeMove(x);
 				if (ticTacGame->isGameOver())
 				{
-					EndGame();
-					DestroyWindow(hWnd);
+					if (EndGame(hWnd, ticTacGame))
+					{
+						DestroyWindow(hWnd);
+					}
+
 					break;
 				}
 			}
@@ -245,24 +283,7 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		switch (wmId)
 		{
 			case IDM_NEWGAME:
-				{
-					int ret = DialogBox(hInst, MAKEINTRESOURCE(IDD_NEWGAME_DIALOG), hWnd, NewGameDlgProc);
-					if (ret == IDOK)
-					{
-						ticTacGame = std::make_shared<TicTacGame::Game>(CurrentGameSettings);
-						//Resetting game board in GUI.
-						for (size_t fieldNumber = 0; fieldNumber <= 9; fieldNumber++)
-						{
-							SendMessage(GetDlgItem(hWnd, fieldNumber + 301), BM_SETIMAGE, (WPARAM)IMAGE_ICON, (LPARAM)NULL);
-						}
-
-						auto cp = ticTacGame->currentPlayer();
-						SetWindowText(GetDlgItem(hWnd, IDC_PLABEL), (LPCWSTR)&cp);
-
-					}
-					else if (ret == IDCANCEL)
-						break;
-				}
+				GameReinitialization(hWnd, ticTacGame);
 				break;
 			case IDM_ABOUT:
 				DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);

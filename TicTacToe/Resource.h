@@ -9,9 +9,10 @@
 #define IDD_TICTACTOE_DIALOG    102
 #define IDD_ABOUTBOX            103
 #define IDD_NEWGAME_DIALOG      104
-#define IDM_ABOUT               105
-#define IDM_EXIT                106
-#define IDM_NEWGAME             107
+#define IDD_PLAY_AGAIN          105
+#define IDM_ABOUT               106
+#define IDM_EXIT                107
+#define IDM_NEWGAME             108
 #define IDI_TICTACTOE           151
 #define IDI_SMALL               152
 #define IDC_TICTACTOE           200
@@ -30,6 +31,7 @@
 #define IDB_NINE                309
 #define IDC_NLABEL              310
 #define IDC_PLABEL              311
+#define IDC_PALABEL             312
 #define IDC_MYICON              2
 #ifndef IDC_STATIC
 #define IDC_STATIC              -1
