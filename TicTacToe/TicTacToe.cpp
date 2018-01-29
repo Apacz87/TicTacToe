@@ -339,7 +339,7 @@ BOOL CALLBACK NewGameDlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 				HWND hDropdownlist = GetDlgItem(hwnd, IDC_ALGORITHM_BOX);
 				SendMessage(hDropdownlist, CB_ADDSTRING, 0, (LPARAM)L"MinMax - Game Tree");
 				SendMessage(hDropdownlist, CB_ADDSTRING, 0, (LPARAM)L"MinMax - Recursively");
-				SendMessage(hDropdownlist, CB_SETCURSEL, 0, NULL);
+				SendMessage(hDropdownlist, CB_SETCURSEL, 1, NULL);
 			}
 			break;
 		case WM_COMMAND:
