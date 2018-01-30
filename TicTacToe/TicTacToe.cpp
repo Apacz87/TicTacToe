@@ -37,7 +37,11 @@ BOOL    CALLBACK    NewGameDlgProc(HWND, UINT, WPARAM, LPARAM);
 bool                GameEnd(HWND&, std::shared_ptr<TicTacGame::Game>&);
 bool                GameReinitialization(HWND&, std::shared_ptr<TicTacGame::Game>&);
 
-// Game Over message.
+//
+//  FUNCTION: EndGame(HWND&, std::shared_ptr<TicTacGame::Game>&)
+//
+//  PURPOSE: Game Over message, returns TRUE if the player wants to terminate the application.
+//
 bool EndGame(HWND& hWnd, std::shared_ptr<TicTacGame::Game>& game)
 {
 	if (ticTacGame->checkIfSpecifiedPlayerWon(TicTacGame::Player::CROSS))
@@ -62,7 +66,11 @@ bool EndGame(HWND& hWnd, std::shared_ptr<TicTacGame::Game>& game)
 	return true;
 }
 
-// Initialization of a new game.
+//
+//  FUNCTION: GameReinitialization(HWND&, std::shared_ptr<TicTacGame::Game>&)
+//
+//  PURPOSE: Initialization of a new game.
+//
 bool GameReinitialization(HWND& hWnd, std::shared_ptr<TicTacGame::Game>& game)
 {
 	int ret = DialogBox(hInst, MAKEINTRESOURCE(IDD_NEWGAME_DIALOG), hWnd, NewGameDlgProc);
@@ -84,17 +92,25 @@ bool GameReinitialization(HWND& hWnd, std::shared_ptr<TicTacGame::Game>& game)
 	return false;
 }
 
-// Function refreshing Node label.
+//
+//  FUNCTION: NodeLabelRefresh(HWND)
+//
+//  PURPOSE: Refreshing Node label.
+//
 void NodeLabelRefresh(HWND hwnd)
 {
 	while (true)
 	{
 		SetWindowText(GetDlgItem(hwnd, IDC_NLABEL), std::to_wstring(ticTacGame->numberOfExistingNodes()).c_str());
-		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	}
 }
 
-// The WinApi main function.
+//
+//  FUNCTION: _tWinMain
+//
+//  PURPOSE: The WinApi main function.
+//
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPTSTR lpCmdLine, _In_ int nCmdShow)
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
@@ -225,12 +241,9 @@ HWND InitializationOfMainWindow(HINSTANCE hInstance)
 //  WM_PAINT	- Paint the main window
 //  WM_DESTROY	- post a quit message and return
 //
-//
 LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int wmId, wmEvent;
-	PAINTSTRUCT ps;
-	HDC hdc;
 
 	switch (message)
 	{
@@ -294,11 +307,6 @@ LRESULT CALLBACK MainWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 			default:
 				return DefWindowProc(hWnd, message, wParam, lParam);
 		}
-		break;
-	case WM_PAINT:
-		hdc = BeginPaint(hWnd, &ps);
-		// TODO: Add any drawing code here...
-		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
